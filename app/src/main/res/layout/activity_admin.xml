@@ -1,0 +1,37 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:padding="16dp">
+
+    <EditText
+        android:id="@+id/productNameField"
+        android:layout_width="348dp"
+        android:layout_height="59dp"
+        android:hint="Product Name" />
+
+    <EditText
+        android:id="@+id/productPriceField"
+        android:layout_width="348dp"
+        android:layout_height="62dp"
+        android:hint="Product Price"
+        android:inputType="numberDecimal" />
+
+    <EditText
+        android:id="@+id/productDescriptionField"
+        android:layout_width="348dp"
+        android:layout_height="63dp"
+        android:hint="Product Description" />
+
+    <EditText
+        android:id="@+id/productImageUrlField"
+        android:layout_width="345dp"
+        android:layout_height="60dp"
+        android:hint="Image URL" />
+
+    <Button
+        android:id="@+id/addProductButton"
+        android:layout_width="238dp"
+        android:layout_height="68dp"
+        android:text="Add Product" />
+</LinearLayout>

@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "709012778726",
+    "project_id": "nutraglowfinal",
+    "storage_bucket": "nutraglowfinal.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:709012778726:android:49e5ded22223eceeeb1527",
+        "android_client_info": {
+          "package_name": "com.example.nutraglow"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBqxaYIBMYr1g6QQqEyY-s2zpaO8FT110Q"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
