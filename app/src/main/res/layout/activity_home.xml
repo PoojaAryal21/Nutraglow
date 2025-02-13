@@ -3,7 +3,10 @@
     android:layout_height="match_parent"
     android:orientation="vertical"
     android:gravity="center"
-    android:padding="16dp">
+    android:paddingLeft="16dp"
+    android:paddingRight="16dp"
+    android:paddingTop="100dp">
+
 
     <TextView
         android:layout_width="wrap_content"
@@ -15,8 +18,18 @@
 
     <Button
         android:id="@+id/adminButton"
-        android:layout_width="match_parent"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Admin Page" />
+        android:text="Admin Panel"
+        android:layout_gravity="center"
+        android:padding="10dp"/>
+
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/recyclerView"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:padding="10dp"/>
+
 
 </LinearLayout>

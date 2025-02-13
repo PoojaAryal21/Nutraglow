@@ -3,6 +3,7 @@ plugins {
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
     alias(libs.plugins.google.gms.google.services)
+    id("kotlin-kapt")
 
 }
 
@@ -62,6 +63,16 @@ dependencies {
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)
 
-    implementation("com.google.firebase:firebase-auth:23.1.0")
+
     implementation("androidx.appcompat:appcompat:1.7.0")
+
+    implementation("com.github.bumptech.glide:glide:4.16.0")
+    kapt("com.github.bumptech.glide:compiler:4.16.0")
+    implementation("androidx.recyclerview:recyclerview:1.2.1")
+
+    implementation(platform("com.google.firebase:firebase-bom:32.2.3")) // Use BOM for compatibility
+    implementation("com.google.firebase:firebase-auth") // No version needed (handled by BOM)
+    implementation("com.google.firebase:firebase-auth-ktx") // No version needed
+    implementation("com.google.firebase:firebase-database-ktx") // Also remove version
+
 }

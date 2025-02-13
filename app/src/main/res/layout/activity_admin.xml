@@ -2,36 +2,53 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    android:padding="16dp">
+    android:padding= "25dp">
+
+    <TextView
+        android:layout_width="292dp"
+        android:layout_height="45dp"
+        android:layout_gravity="center"
+        android:text="Welcome to the Home Screen!"
+        android:textSize="20sp"
+        android:textStyle="bold" />
+
+    <Button
+        android:id="@+id/adminButton"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Admin Page"
+        android:layout_marginBottom="16dp"/>
 
     <EditText
         android:id="@+id/productNameField"
-        android:layout_width="348dp"
-        android:layout_height="59dp"
+        android:layout_width="match_parent"
+        android:layout_height="55dp"
         android:hint="Product Name" />
 
     <EditText
         android:id="@+id/productPriceField"
-        android:layout_width="348dp"
-        android:layout_height="62dp"
+        android:layout_width="match_parent"
+        android:layout_height="55dp"
         android:hint="Product Price"
         android:inputType="numberDecimal" />
 
     <EditText
         android:id="@+id/productDescriptionField"
-        android:layout_width="348dp"
-        android:layout_height="63dp"
+        android:layout_width="match_parent"
+        android:layout_height="55dp"
         android:hint="Product Description" />
 
     <EditText
         android:id="@+id/productImageUrlField"
-        android:layout_width="345dp"
-        android:layout_height="60dp"
+        android:layout_width="match_parent"
+        android:layout_height="55dp"
         android:hint="Image URL" />
 
     <Button
         android:id="@+id/addProductButton"
-        android:layout_width="238dp"
-        android:layout_height="68dp"
-        android:text="Add Product" />
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Add Product"/>
+
+
 </LinearLayout>
