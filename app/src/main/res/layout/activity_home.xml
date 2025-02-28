@@ -24,6 +24,14 @@
         android:padding="10dp"
         android:text="Admin Panel" />
 
+    <Button
+        android:id="@+id/goToCartButton"
+        android:layout_width="125dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="10dp"
+        android:layout_marginBottom="10dp"
+        android:text="Go to Cart" />
+
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/recyclerView"
@@ -40,6 +48,7 @@
             android:layout_height="wrap_content"
             android:orientation="vertical" />
     </ScrollView>
+
 
 
 </LinearLayout>

@@ -53,7 +53,7 @@ class AdminActivity : AppCompatActivity() {
         val productId = database.push().key ?: return
 
         // Create Product object (Now matches your Product class)
-        val product = Product(name, price, description, imageUrl)
+        val product = Product(productId, name, price, description, imageUrl)
 
         // Push to Firebase Database
         database.child(productId).setValue(product)

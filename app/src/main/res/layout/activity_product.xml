@@ -10,32 +10,52 @@
 
     <ImageView
         android:id="@+id/product1Image"
-        android:layout_width="match_parent"
-        android:layout_height="200dp"
+        android:layout_width="363dp"
+        android:layout_height="188dp"
         android:scaleType="centerCrop" />
 
     <TextView
         android:id="@+id/product1Name"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:textSize="18sp"
-        android:textStyle="bold"
+        android:layout_width="363dp"
+        android:layout_height="43dp"
         android:paddingTop="5dp"
-        android:text="Product Name"/>
+        android:text="    Product Name"
+        android:textSize="18sp"
+        android:textStyle="bold" />
 
     <TextView
         android:id="@+id/product1Price"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:textSize="16sp"
+        android:layout_width="363dp"
+        android:layout_height="43dp"
+        android:text="     Product Price"
         android:textColor="@android:color/holo_green_dark"
-        android:text="Product Price"/>
+        android:textSize="16sp" />
 
     <TextView
         android:id="@+id/product1Description"
-        android:layout_width="match_parent"
+        android:layout_width="363dp"
+        android:layout_height="43dp"
+        android:paddingBottom="5dp"
+        android:text="     Product Description"
+        android:textSize="14sp" />
+
+    <Button
+        android:id="@+id/addToCartButton"
+        android:layout_width="363dp"
         android:layout_height="wrap_content"
-        android:textSize="14sp"
-        android:text="Product Description"
-        android:paddingBottom="5dp"/>
+        android:backgroundTint="@android:color/holo_blue_light"
+        android:text="Add to Cart"
+        android:textColor="@android:color/white" />
+
+    <Button
+        android:id="@+id/removeFromCartButton"
+        android:layout_width="363dp"
+        android:layout_height="wrap_content"
+        android:backgroundTint="@android:color/holo_red_light"
+        android:text="Remove from Cart"
+        android:textColor="@android:color/white"
+        android:visibility="gone"/>
+
+
+
 </LinearLayout>

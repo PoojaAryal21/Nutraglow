@@ -15,6 +15,7 @@ class HomeActivity : AppCompatActivity() {
     private lateinit var productAdapter: ProductAdapter
     private lateinit var productList: ArrayList<Product>
     private lateinit var databaseReference: DatabaseReference
+    private lateinit var goToCartButton: Button
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -26,7 +27,7 @@ class HomeActivity : AppCompatActivity() {
 
         // Initialize Product List and Adapter
         productList = ArrayList()
-        productAdapter = ProductAdapter(productList)
+        productAdapter = ProductAdapter(productList,  isCart = false)
         recyclerView.adapter = productAdapter
 
         // Firebase Database Reference
@@ -41,6 +42,13 @@ class HomeActivity : AppCompatActivity() {
             val intent = Intent(this, AdminActivity::class.java)
             startActivity(intent)
         }
+        // Initialize "Go to Cart" Button
+        val goToCartButton = findViewById<Button>(R.id.goToCartButton)
+        goToCartButton.setOnClickListener {
+            val intent = Intent(this, CartActivity::class.java)
+            startActivity(intent)
+        }
+
     }
 
     private fun fetchProducts() {
