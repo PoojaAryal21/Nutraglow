@@ -1,9 +1,10 @@
 package com.example.nutraglow
 
 data class Product(
-    var productId: String? = null,
-    val name: String = "",
-    val price: String = "",
-    val description: String = "",
-    val imageUrl: String = ""
+    val productId: String? = null,
+    val name: String? = null,
+    val price: Double = 0.0,
+    val description: String? = null,
+    val imageUrl: String? = null,
+    val owner: String? = null // Added to track who added the product
 )

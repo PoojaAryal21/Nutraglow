@@ -1,54 +1,77 @@
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView
+    xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical"
-    android:padding= "25dp">
+    android:padding="20dp">
 
-    <TextView
-        android:layout_width="292dp"
-        android:layout_height="45dp"
-        android:layout_gravity="center"
-        android:text="Welcome to the Home Screen!"
-        android:textSize="20sp"
-        android:textStyle="bold" />
-
-    <Button
-        android:id="@+id/adminButton"
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Admin Page"
-        android:layout_marginBottom="16dp"/>
+        android:orientation="vertical"
+        android:paddingTop="100dp"
+        android:paddingLeft="20dp"
+        android:paddingRight="20dp"
+        android:paddingBottom="20dp">
 
-    <EditText
-        android:id="@+id/productNameField"
-        android:layout_width="match_parent"
-        android:layout_height="55dp"
-        android:hint="Product Name" />
+        <Button
+            android:id="@+id/logoutButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Logout"
+            android:layout_gravity="end" />
 
-    <EditText
-        android:id="@+id/productPriceField"
-        android:layout_width="match_parent"
-        android:layout_height="55dp"
-        android:hint="Product Price"
-        android:inputType="numberDecimal" />
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Admin Panel"
+            android:textSize="20sp"
+            android:gravity="center"
+            android:textStyle="bold"/>
 
-    <EditText
-        android:id="@+id/productDescriptionField"
-        android:layout_width="match_parent"
-        android:layout_height="55dp"
-        android:hint="Product Description" />
+        <EditText
+            android:id="@+id/productName"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Product Name" />
 
-    <EditText
-        android:id="@+id/productImageUrlField"
-        android:layout_width="match_parent"
-        android:layout_height="55dp"
-        android:hint="Image URL" />
+        <EditText
+            android:id="@+id/productPrice"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Product Price"
+            android:inputType="numberDecimal" />
 
-    <Button
-        android:id="@+id/addProductButton"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Add Product"/>
+        <EditText
+            android:id="@+id/productDescription"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Product Description" />
 
+        <EditText
+            android:id="@+id/productImageUrl"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Image URL (Optional)" />
 
-</LinearLayout>
+        <Button
+            android:id="@+id/selectImageButton"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Select Image" />
+
+        <ImageView
+            android:id="@+id/productImagePreview"
+            android:layout_width="match_parent"
+            android:layout_height="200dp"
+            android:scaleType="centerCrop"
+            android:visibility="gone"/> <!-- ✅ Initially hidden -->
+
+        <Button
+            android:id="@+id/addProductButton"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Add Product" />
+
+    </LinearLayout>
+</ScrollView>

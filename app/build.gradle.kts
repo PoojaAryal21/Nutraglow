@@ -68,11 +68,16 @@ dependencies {
 
     implementation("com.github.bumptech.glide:glide:4.16.0")
     kapt("com.github.bumptech.glide:compiler:4.16.0")
-    implementation("androidx.recyclerview:recyclerview:1.2.1")
+    implementation("androidx.recyclerview:recyclerview:1.4.0")
 
-    implementation(platform("com.google.firebase:firebase-bom:32.2.3")) // Use BOM for compatibility
+    implementation(platform("com.google.firebase:firebase-bom:33.10.0")) // Use BOM for compatibility
     implementation("com.google.firebase:firebase-auth") // No version needed (handled by BOM)
     implementation("com.google.firebase:firebase-auth-ktx") // No version needed
     implementation("com.google.firebase:firebase-database-ktx") // Also remove version
+
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-play-services:1.7.3")
+    implementation("com.google.firebase:firebase-storage:21.0.1")
+
+
 
 }

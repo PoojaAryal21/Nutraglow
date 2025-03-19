@@ -1,75 +1,155 @@
 package com.example.nutraglow
 
+import android.app.Activity
+import android.content.Intent
+import android.net.Uri
 import android.os.Bundle
-import android.widget.Button
-import android.widget.EditText
-import android.widget.Toast
+import android.widget.*
 import androidx.appcompat.app.AppCompatActivity
+import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.DatabaseReference
 import com.google.firebase.database.FirebaseDatabase
+import com.google.firebase.storage.FirebaseStorage
 
 class AdminActivity : AppCompatActivity() {
 
-    private lateinit var database: DatabaseReference
-    private lateinit var productNameField: EditText
-    private lateinit var productPriceField: EditText
-    private lateinit var productDescriptionField: EditText
-    private lateinit var productImageUrlField: EditText
+    private lateinit var databaseProducts: DatabaseReference
+    private lateinit var storageReference: FirebaseStorage
+
+    private lateinit var productNameInput: EditText
+    private lateinit var productPriceInput: EditText
+    private lateinit var productDescriptionInput: EditText
+    private lateinit var productImageUrlInput: EditText
+    private lateinit var selectImageButton: Button
     private lateinit var addProductButton: Button
+    private lateinit var logoutButton: Button
+    private lateinit var previewImageView: ImageView  // ✅ Added preview for selected image
+
+    private var imageUri: Uri? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_admin)
 
-        // Initialize Firebase Database reference
-        database = FirebaseDatabase.getInstance().reference.child("products")
+        // Initialize Firebase references
+        databaseProducts = FirebaseDatabase.getInstance().getReference("products")
+        storageReference = FirebaseStorage.getInstance()
 
-        // Initialize UI elements (Ensure these IDs exist in `activity_admin.xml`)
-        productNameField = findViewById(R.id.productNameField)
-        productPriceField = findViewById(R.id.productPriceField)
-        productDescriptionField = findViewById(R.id.productDescriptionField)
-        productImageUrlField = findViewById(R.id.productImageUrlField)
+        // Initialize UI elements
+        productNameInput = findViewById(R.id.productName)
+        productPriceInput = findViewById(R.id.productPrice)
+        productDescriptionInput = findViewById(R.id.productDescription)
+        productImageUrlInput = findViewById(R.id.productImageUrl) // ✅ Fixed ID typo
+        selectImageButton = findViewById(R.id.selectImageButton)
         addProductButton = findViewById(R.id.addProductButton)
+        logoutButton = findViewById(R.id.logoutButton)
+        previewImageView = findViewById(R.id.productImagePreview) // ✅ Added image preview
 
-        // Set click listener for the add product button
+        // ✅ Select image from device
+        selectImageButton.setOnClickListener {
+            val intent = Intent(Intent.ACTION_GET_CONTENT)
+            intent.type = "image/*"
+            startActivityForResult(intent, IMAGE_PICK_CODE)
+        }
+
+        // ✅ Add product to Firebase
         addProductButton.setOnClickListener {
             addProductToDatabase()
+        }
+
+        // ✅ Logout user
+        logoutButton.setOnClickListener {
+            FirebaseAuth.getInstance().signOut()
+            startActivity(Intent(this, SignInActivity::class.java))
+            finish()
         }
     }
 
     private fun addProductToDatabase() {
-        val name = productNameField.text.toString().trim()
-        val price = productPriceField.text.toString().trim() // Keep as String
-        val description = productDescriptionField.text.toString().trim()
-        val imageUrl = productImageUrlField.text.toString().trim()
+        val name = productNameInput.text.toString().trim()
+        val price = productPriceInput.text.toString().toDoubleOrNull() ?: 0.0
+        val description = productDescriptionInput.text.toString().trim()
+        val imageUrl = productImageUrlInput.text.toString().trim()
 
-        // Validate inputs
-        if (name.isEmpty() || price.isEmpty() || description.isEmpty() || imageUrl.isEmpty()) {
-            Toast.makeText(this, "Please fill all fields", Toast.LENGTH_SHORT).show()
+        if (name.isEmpty() || description.isEmpty()) {
+            Toast.makeText(this, "All fields are required!", Toast.LENGTH_SHORT).show()
             return
         }
 
-        // Generate unique product ID
-        val productId = database.push().key ?: return
+        val productId = databaseProducts.push().key ?: return
+        val currentUser = FirebaseAuth.getInstance().currentUser?.uid ?: "unknown"
 
-        // Create Product object (Now matches your Product class)
-        val product = Product(productId, name, price, description, imageUrl)
+        // ✅ If an image URL is provided, use it directly
+        if (imageUrl.isNotEmpty()) {
+            saveProductToDatabase(productId, name, price, description, imageUrl, currentUser)
+        }
+        // ✅ If an image is selected from device, upload to Firebase
+        else if (imageUri != null) {
+            val imageRef = storageReference.reference.child("product_images/$productId.jpg")
+            imageRef.putFile(imageUri!!)
+                .addOnSuccessListener {
+                    imageRef.downloadUrl.addOnSuccessListener { uri ->
+                        saveProductToDatabase(productId, name, price, description, uri.toString(), currentUser)
+                    }
+                }
+                .addOnFailureListener {
+                    Toast.makeText(this, "Image upload failed!", Toast.LENGTH_SHORT).show()
+                }
+        }
+        // ✅ If neither an image nor a URL is provided, show an error
+        else {
+            Toast.makeText(this, "Please provide an image URL or select an image!", Toast.LENGTH_SHORT).show()
+        }
+    }
 
-        // Push to Firebase Database
-        database.child(productId).setValue(product)
+    private fun saveProductToDatabase(
+        productId: String,
+        name: String,
+        price: Double,
+        description: String,
+        imageUrl: String,
+        owner: String
+    ) {
+        val product = Product(
+            productId = productId,
+            name = name,
+            price = price,
+            description = description,
+            imageUrl = imageUrl,
+            owner = owner
+        )
+        databaseProducts.child(productId).setValue(product)
             .addOnSuccessListener {
-                Toast.makeText(this, "Product added successfully!", Toast.LENGTH_SHORT).show()
+                Toast.makeText(this, "Product added!", Toast.LENGTH_SHORT).show()
                 clearFields()
             }
             .addOnFailureListener {
-                Toast.makeText(this, "Failed to add product: ${it.message}", Toast.LENGTH_LONG).show()
+                Toast.makeText(this, "Failed to add product", Toast.LENGTH_SHORT).show()
             }
     }
 
     private fun clearFields() {
-        productNameField.text.clear()
-        productPriceField.text.clear()
-        productDescriptionField.text.clear()
-        productImageUrlField.text.clear()
+        productNameInput.text.clear()
+        productPriceInput.text.clear()
+        productDescriptionInput.text.clear()
+        productImageUrlInput.text.clear()
+        imageUri = null
+        previewImageView.setImageResource(0) // ✅ Clear image preview
+        selectImageButton.text = "Select Image"
+    }
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+        if (requestCode == IMAGE_PICK_CODE && resultCode == Activity.RESULT_OK) {
+            imageUri = data?.data
+            selectImageButton.text = "Image Selected"
+
+            // ✅ Show preview of selected image
+            previewImageView.setImageURI(imageUri)
+        }
+    }
+
+    companion object {
+        private const val IMAGE_PICK_CODE = 1000
     }
 }

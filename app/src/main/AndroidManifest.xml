@@ -32,6 +32,10 @@
         <activity android:name=".RegisterActivity" />
         <activity android:name=".SignInActivity" />
         <activity android:name=".CartActivity" />
+        <activity android:name=".VendorActivity" />
+        <activity android:name=".CustomerActivity" />
+
+
     </application>
 
 </manifest>

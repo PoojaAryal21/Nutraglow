@@ -6,98 +6,71 @@ import android.view.ViewGroup
 import android.widget.Button
 import android.widget.ImageView
 import android.widget.TextView
-import android.util.Log
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.google.firebase.database.DatabaseReference
 import com.google.firebase.database.FirebaseDatabase
 
-class ProductAdapter(private val productList: MutableList<Product>, private val isCart: Boolean) :
-    RecyclerView.Adapter<ProductAdapter.ProductViewHolder>() {
+class ProductAdapter(
+    private val productList: MutableList<Product>,
+    private val isCart: Boolean,
+    private val onDeleteClick: ((Product) -> Unit)? = null
+) : RecyclerView.Adapter<ProductAdapter.ProductViewHolder>() {
 
     class ProductViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
-        val name: TextView = itemView.findViewById(R.id.product1Name)
-        val price: TextView = itemView.findViewById(R.id.product1Price)
-        val description: TextView = itemView.findViewById(R.id.product1Description)
-        val image: ImageView = itemView.findViewById(R.id.product1Image)
+        val name: TextView = itemView.findViewById(R.id.productName)
+        val price: TextView = itemView.findViewById(R.id.productPrice)
+        val description: TextView = itemView.findViewById(R.id.productDescription)
+        val image: ImageView = itemView.findViewById(R.id.productImage)
         val addToCartButton: Button = itemView.findViewById(R.id.addToCartButton)
         val removeFromCartButton: Button = itemView.findViewById(R.id.removeFromCartButton)
+        val deleteProductButton: Button = itemView.findViewById(R.id.deleteProductButton)
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ProductViewHolder {
-        val itemView = LayoutInflater.from(parent.context)
-            .inflate(R.layout.activity_product, parent, false)
+        val itemView = LayoutInflater.from(parent.context).inflate(R.layout.activity_product, parent, false) // ✅ Ensure correct layout file
         return ProductViewHolder(itemView)
     }
 
     override fun onBindViewHolder(holder: ProductViewHolder, position: Int) {
-        if (position >= productList.size) return  // Prevent index errors
-
         val product = productList[position]
-
-        // Ensure productId is valid
-        if (product.productId.isNullOrEmpty()) {
-            Log.e("ProductAdapter", "Error: productId is null or empty for product: ${product.name}")
-            return
-        }
-
         holder.name.text = product.name
-        holder.price.text = holder.itemView.context.getString(R.string.product_price, product.price)
-        holder.description.text = holder.itemView.context.getString(R.string.product_description, product.description)
+        holder.price.text = "$${product.price}"  // ✅ Fix price formatting
+        holder.description.text = product.description
 
+        // ✅ Ensure image loads properly
         Glide.with(holder.itemView.context)
             .load(product.imageUrl)
             .into(holder.image)
 
-        val cartRef: DatabaseReference = FirebaseDatabase.getInstance().getReference("cart")
-
         if (isCart) {
             holder.addToCartButton.visibility = View.GONE
             holder.removeFromCartButton.visibility = View.VISIBLE
-
             holder.removeFromCartButton.setOnClickListener {
-                val pos = holder.adapterPosition
-                if (pos == RecyclerView.NO_POSITION) return@setOnClickListener
-
-                val productId = productList[pos].productId
-                if (!productId.isNullOrEmpty()) {
-                    cartRef.child(productId).removeValue()
-                        .addOnSuccessListener {
-                            if (pos < productList.size) {
-                                productList.removeAt(pos)
-                                notifyItemRemoved(pos)
-                                notifyItemRangeChanged(pos, productList.size)
-                                Log.d("FirebaseSuccess", "Removed product from cart: $productId")
-                            }
-                        }
-                        .addOnFailureListener { exception ->
-                            Log.e("FirebaseError", "Failed to remove item from cart: ${exception.message}")
-                        }
+                val cartRef: DatabaseReference = FirebaseDatabase.getInstance().getReference("cart")
+                cartRef.child(product.productId!!).removeValue().addOnSuccessListener {
+                    productList.removeAt(position)
+                    notifyItemRemoved(position)
+                    notifyItemRangeChanged(position, productList.size)
                 }
             }
         } else {
             holder.addToCartButton.visibility = View.VISIBLE
             holder.removeFromCartButton.visibility = View.GONE
-
             holder.addToCartButton.setOnClickListener {
-                val pos = holder.adapterPosition
-                if (pos == RecyclerView.NO_POSITION) return@setOnClickListener
+                val cartRef: DatabaseReference = FirebaseDatabase.getInstance().getReference("cart")
+                val cartItemId = cartRef.push().key ?: return@setOnClickListener
+                val cartItem = Product(product.productId, product.name, product.price, product.description, product.imageUrl)
 
-                val productId = productList[pos].productId
-                if (!productId.isNullOrEmpty()) {
-                    val cartItem = Product(productId, product.name, product.price, product.description, product.imageUrl)
-
-                    cartRef.child(productId).setValue(cartItem)
-                        .addOnSuccessListener {
-                            holder.addToCartButton.text = "Added"
-                            holder.addToCartButton.isEnabled = false
-                            Log.d("FirebaseSuccess", "Product added to cart successfully")
-                        }
-                        .addOnFailureListener { exception ->
-                            Log.e("FirebaseError", "Failed to add item to cart: ${exception.message}")
-                        }
+                cartRef.child(cartItemId).setValue(cartItem).addOnSuccessListener {
+                    holder.addToCartButton.text = "Added"
+                    holder.addToCartButton.isEnabled = false
                 }
             }
+        }
+
+        holder.deleteProductButton.setOnClickListener {
+            onDeleteClick?.invoke(product)
         }
     }
 
