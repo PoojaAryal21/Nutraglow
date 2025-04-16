@@ -1,43 +1,88 @@
 <?xml version="1.0" encoding="utf-8"?>
-<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:fillViewport="true"
-    android:scrollbars="vertical">
+    android:orientation="vertical"
+    android:paddingTop="90dp"
+    android:paddingLeft="20dp"
+    android:paddingRight="20dp"
+    android:paddingBottom="20dp">
 
+    <!-- Logout and Cart Buttons -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:paddingTop="90dp"
-        android:paddingLeft="20dp"
-        android:paddingRight="20dp"
-        android:paddingBottom="20dp"
-        android:orientation="vertical">
+        android:orientation="horizontal"
+        android:gravity="end"
+        android:layout_marginBottom="10dp">
 
         <Button
             android:id="@+id/logoutButton"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Logout"
-            android:layout_marginTop="20dp"
-            android:layout_gravity="end"/>
+            android:text="Logout" />
 
-        <TextView
-            android:layout_width="match_parent"
+        <Button
+            android:id="@+id/goToCartButton"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Customer Dashboard"
-            android:textSize="20sp"
-            android:gravity="center"
-            android:textStyle="bold"
-            android:layout_marginBottom="10dp"/>
-
-        <!-- ✅ FIX: Make RecyclerView's height flexible and allow smooth scrolling -->
-        <androidx.recyclerview.widget.RecyclerView
-            android:id="@+id/recyclerViewProduct"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:nestedScrollingEnabled="false"
-            android:scrollbars="vertical"/>
-
+            android:text="Go to Cart"
+            android:layout_marginStart="10dp" />
     </LinearLayout>
-</ScrollView>
+
+    <!-- Search Input -->
+    <EditText
+        android:id="@+id/searchInput"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Search products..."
+        android:padding="10dp"
+        android:background="@android:drawable/editbox_background"
+        android:layout_marginBottom="10dp" />
+
+    <!-- Filter Buttons -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:layout_marginBottom="10dp">
+
+        <Button
+            android:id="@+id/sortByPriceButton"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Sort by Price" />
+
+        <Button
+            android:id="@+id/sortByNameButton"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Sort by Name" />
+    </LinearLayout>
+
+    <!-- Customer Dashboard Heading -->
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Customer Dashboard"
+        android:textSize="20sp"
+        android:textStyle="bold"
+        android:gravity="center"
+        android:layout_marginBottom="10dp" />
+
+    <!-- Grid-style RecyclerView -->
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/recyclerViewProduct"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:scrollbars="vertical" />
+
+    <include
+        layout="@layout/bottom_nav" />
+
+</LinearLayout>
+
+

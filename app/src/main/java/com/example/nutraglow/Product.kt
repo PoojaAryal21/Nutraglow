@@ -6,5 +6,6 @@ data class Product(
     val price: Double = 0.0,
     val description: String? = null,
     val imageUrl: String? = null,
-    val owner: String? = null // Added to track who added the product
+    val owner: String? = null, // Added to track who added the product
+    var quantity: Int = 1
 )

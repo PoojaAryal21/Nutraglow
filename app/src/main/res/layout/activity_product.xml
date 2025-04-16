@@ -39,6 +39,36 @@
         android:text="Product Description"
         android:textSize="14sp" />
 
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical">
+
+        <Button
+            android:id="@+id/decreaseQuantity"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:text="-"
+            android:visibility="gone" />
+
+        <TextView
+            android:id="@+id/quantityText"
+            android:layout_width="40dp"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:text="1"
+            android:textSize="16sp"
+            android:visibility="gone" />
+
+        <Button
+            android:id="@+id/increaseQuantity"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:text="+"
+            android:visibility="gone" />
+    </LinearLayout>
+
     <Button
         android:id="@+id/addToCartButton"
         android:layout_width="match_parent"
@@ -59,4 +89,6 @@
         android:layout_height="wrap_content"
         android:text="Delete Product"
         android:visibility="gone"/>
+
+
 </LinearLayout>

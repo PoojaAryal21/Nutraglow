@@ -1,39 +1,108 @@
 package com.example.nutraglow
 
+import android.content.Intent
 import android.os.Bundle
+import android.text.Editable
+import android.text.TextWatcher
 import android.widget.Button
+import android.widget.EditText
+import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
-import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.*
+import java.util.*
 
 class CustomerActivity : AppCompatActivity() {
 
     private lateinit var recyclerView: RecyclerView
     private lateinit var productAdapter: ProductAdapter
     private lateinit var productList: MutableList<Product>
+    private lateinit var filteredList: MutableList<Product>
     private lateinit var databaseReference: DatabaseReference
-    private lateinit var logoutButton: Button  // ✅ Logout Button
+    private lateinit var logoutButton: Button
+    private lateinit var goToCartButton: Button
+    private lateinit var searchInput: EditText
+    private lateinit var sortByPriceButton: Button
+    private lateinit var sortByNameButton: Button
+    private lateinit var navCart: Button
+    private lateinit var navAccount: Button
+    private lateinit var navHome: Button
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_customer) // ✅ Ensure this matches the XML file name
+        setContentView(R.layout.activity_customer)
 
-        recyclerView = findViewById(R.id.recyclerViewProduct) // ✅ Ensure this ID exists in XML
-        recyclerView.layoutManager = LinearLayoutManager(this)
+        recyclerView = findViewById(R.id.recyclerViewProduct)
+        recyclerView.layoutManager = GridLayoutManager(this, 2)
 
         productList = mutableListOf()
-        productAdapter = ProductAdapter(productList, isCart = false)
+        filteredList = mutableListOf()
+        productAdapter = ProductAdapter(
+            productList = filteredList,
+            isCart = false,
+            showDescription = false,
+            onItemClick = { product ->
+                val intent = Intent(this, ProductDetailActivity::class.java).apply {
+                    putExtra("productId", product.productId ?: "")
+                    putExtra("name", product.name ?: "")
+                    putExtra("price", product.price)
+                    putExtra("description", product.description ?: "")
+                    putExtra("imageUrl", product.imageUrl ?: "")
+                }
+                startActivity(intent)
+            }
+        )
         recyclerView.adapter = productAdapter
 
         databaseReference = FirebaseDatabase.getInstance().getReference("products")
 
-        fetchProducts()
-
         logoutButton = findViewById(R.id.logoutButton)
+        goToCartButton = findViewById(R.id.goToCartButton)
+        searchInput = findViewById(R.id.searchInput)
+        sortByPriceButton = findViewById(R.id.sortByPriceButton)
+        sortByNameButton = findViewById(R.id.sortByNameButton)
+
+        navCart = findViewById(R.id.navCart)
+        navAccount = findViewById(R.id.navAccount)
+        navHome = findViewById(R.id.navHome)
+
         logoutButton.setOnClickListener { logoutUser() }
+        goToCartButton.setOnClickListener {
+            startActivity(Intent(this, CartActivity::class.java))
+        }
+
+        navCart.setOnClickListener {
+            startActivity(Intent(this, CartActivity::class.java))
+        }
+        navAccount.setOnClickListener {
+            startActivity(Intent(this, AccountActivity::class.java))
+        }
+        navHome.setOnClickListener {
+            startActivity(Intent(this, CustomerActivity::class.java))
+        }
+
+        searchInput.addTextChangedListener(object : TextWatcher {
+            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
+            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
+                filterProducts(s.toString())
+            }
+            override fun afterTextChanged(s: Editable?) {}
+        })
+
+        sortByPriceButton.setOnClickListener {
+            filteredList.sortBy { it.price }
+            productAdapter.notifyDataSetChanged()
+        }
+
+        sortByNameButton.setOnClickListener {
+            filteredList.sortBy { it.name?.lowercase(Locale.ROOT) }
+            productAdapter.notifyDataSetChanged()
+        }
+
+        fetchProducts()
     }
 
     private fun fetchProducts() {
@@ -46,7 +115,7 @@ class CustomerActivity : AppCompatActivity() {
                         productList.add(product)
                     }
                 }
-                productAdapter.notifyDataSetChanged()
+                filterProducts(searchInput.text.toString())
             }
 
             override fun onCancelled(error: DatabaseError) {
@@ -55,8 +124,19 @@ class CustomerActivity : AppCompatActivity() {
         })
     }
 
+    private fun filterProducts(query: String) {
+        val lowerCaseQuery = query.lowercase(Locale.ROOT)
+        filteredList.clear()
+        filteredList.addAll(productList.filter {
+            it.name?.lowercase(Locale.ROOT)?.contains(lowerCaseQuery) == true ||
+                    it.description?.lowercase(Locale.ROOT)?.contains(lowerCaseQuery) == true
+        })
+        productAdapter.notifyDataSetChanged()
+    }
+
     private fun logoutUser() {
         FirebaseAuth.getInstance().signOut()
-        finish() // ✅ Close CustomerActivity and return to SignInActivity
+        startActivity(Intent(this, SignInActivity::class.java))
+        finish()
     }
 }
