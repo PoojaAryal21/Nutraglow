@@ -65,11 +65,13 @@ class CartActivity : AppCompatActivity() {
             val total = cartList.sumOf { (it.quantity ?: 1) * (it.price ?: 0.0) }
             val totalItems = cartList.sumOf { it.quantity ?: 1 }
 
-            val intent = Intent(this, PaymentActivity::class.java).apply {
+            val intent = Intent(this, CheckoutActivity::class.java).apply {
                 putExtra("TOTAL_AMOUNT", total)
                 putExtra("TOTAL_ITEMS", totalItems)
             }
+
             startActivity(intent)
+
         }
     }
 

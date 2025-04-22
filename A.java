@@ -7,11 +7,8 @@ pluginManagement {
                 includeGroupByRegex("androidx.*")
             }
         }
-        mavenCentral()
-        maven { url = uri("https://jitpack.io") }
-        maven { url = uri("https://khalti.github.io/android-esewa/maven") }
-
-
+        mavenCentral() //
+        maven { url = uri("https://jitpack.io") } //Correct
         gradlePluginPortal()
     }
 }
@@ -21,10 +18,7 @@ dependencyResolutionManagement {
     repositories {
         google()
         mavenCentral()
-        maven { url = uri("https://jitpack.io") }
-
-        // ✅ Added Khalti maven repository
-        maven { url = uri("https://khalti.github.io/android-esewa/maven") }
+        maven { url = uri("https://jitpack.io") } 
     }
 }
 

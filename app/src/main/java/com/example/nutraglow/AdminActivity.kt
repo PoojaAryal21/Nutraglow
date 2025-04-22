@@ -63,6 +63,11 @@ class AdminActivity : AppCompatActivity() {
             startActivity(Intent(this, SignInActivity::class.java))
             finish()
         }
+
+        val viewOrdersButton: Button = findViewById(R.id.viewOrdersButton)
+        viewOrdersButton.setOnClickListener {
+            startActivity(Intent(this, AdminOrdersActivity::class.java))
+        }
     }
 
     private fun addProductToDatabase() {

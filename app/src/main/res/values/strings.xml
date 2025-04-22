@@ -2,5 +2,23 @@
     <string name="app_name">Nutraglow</string>
     <string name="product_price">Price: Rs.%s</string>
     <string name="product_description">Description: %s</string>
+    <string name="error_no_order_id">No order ID provided.</string>
+    <string name="error_order_not_found">Order not found.</string>
+    <string name="status_placeholder">Status: %1$s</string>
+    <string name="order_details_placeholder">Name: %1$s\nAddress: %2$s\nMethod: %3$s\nTime: %4$s</string>
+    <string name="estimated_delivery_placeholder">Estimated delivery: 3-5 business days</string>
+    <string name="error_loading_order">Failed to load order details.</string>
+
+
+    <string name="checkout">Checkout</string>
+    <string name="full_name">Full Name</string>
+    <string name="address">Address</string>
+    <string name="phone_number">Phone Number</string>
+    <string name="email_address">Email Address</string>
+    <string name="cash_on_delivery">Cash on Delivery</string>
+    <string name="pay_with_khalti">Pay with Khalti</string>
+    <string name="place_order">Place Order</string>
+
+
 
 </resources>
