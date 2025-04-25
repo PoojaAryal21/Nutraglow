@@ -81,33 +81,49 @@ class CheckoutActivity : AppCompatActivity() {
     ) {
         val userId = FirebaseAuth.getInstance().currentUser?.uid ?: ""
         val orderId = FirebaseDatabase.getInstance().reference.push().key ?: System.currentTimeMillis().toString()
+        val cartRef = FirebaseDatabase.getInstance().getReference("cart")
 
-        val order = Order(
-            orderId = orderId,
-            userId = userId,
-            customerName = name,
-            address = address,
-            phone = phone,
-            email = email,
-            paymentMethod = paymentMethod,
-            totalAmount = totalAmount,
-            status = if (isPaid) "Processing" else "Pending"
-        )
-
-        FirebaseDatabase.getInstance().getReference("orders").child(orderId).setValue(order)
-            .addOnSuccessListener {
-                PushNotificationUtil.createNotificationChannel(this)
-                PushNotificationUtil.showNotification(
-                    this,
-                    "Order Confirmed",
-                    "Your order has been confirmed and is being processed."
-                )
-
-                Toast.makeText(this, "Order Confirmed. Tracking available.", Toast.LENGTH_LONG).show()
-                startActivity(Intent(this, OrderTrackingActivity::class.java).apply {
-                    putExtra("ORDER_ID", orderId)
-                })
-                finish()
+        cartRef.get().addOnSuccessListener { snapshot ->
+            val productIds = mutableListOf<String>()
+            for (child in snapshot.children) {
+                val productId = child.child("productId").getValue(String::class.java)
+                productId?.let { productIds.add(it) }
             }
+
+            val order = Order(
+                orderId = orderId,
+                userId = userId,
+                customerName = name,
+                address = address,
+                phone = phone,
+                email = email,
+                paymentMethod = paymentMethod,
+                totalAmount = totalAmount,
+                totalItems = totalItems,
+                status = if (isPaid) "Processing" else "Pending",
+                productIds = productIds
+            )
+
+            FirebaseDatabase.getInstance().getReference("orders").child(orderId).setValue(order)
+                .addOnSuccessListener {
+                    PushNotificationUtil.createNotificationChannel(this)
+                    PushNotificationUtil.showNotification(
+                        this,
+                        "Order Confirmed",
+                        "Your order has been confirmed and is being processed."
+                    )
+
+                    Toast.makeText(this, "Order Confirmed. Tracking available.", Toast.LENGTH_LONG).show()
+                    startActivity(Intent(this, OrderTrackingActivity::class.java).apply {
+                        putExtra("ORDER_ID", orderId)
+                    })
+                    finish()
+                }
+                .addOnFailureListener {
+                    Toast.makeText(this, "Failed to place order", Toast.LENGTH_SHORT).show()
+                }
+        }.addOnFailureListener {
+            Toast.makeText(this, "Failed to fetch cart items", Toast.LENGTH_SHORT).show()
+        }
     }
 }

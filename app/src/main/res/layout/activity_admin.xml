@@ -65,7 +65,7 @@
             android:layout_width="match_parent"
             android:layout_height="200dp"
             android:scaleType="centerCrop"
-            android:visibility="gone"/> <!-- ✅ Initially hidden -->
+            android:visibility="gone" />
 
         <Button
             android:id="@+id/addProductButton"
@@ -80,5 +80,26 @@
             android:text="View Orders"
             android:layout_marginTop="16dp"/>
 
+        <!-- ✅ Add these missing buttons -->
+        <Button
+            android:id="@+id/viewCustomersButton"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="View Customers"
+            android:layout_marginTop="12dp" />
+
+        <Button
+            android:id="@+id/viewVendorsButton"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="View Vendors"
+            android:layout_marginTop="12dp" />
+
+        <Button
+            android:id="@+id/viewPaymentsButton"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="View Payments"
+            android:layout_marginTop="12dp" />
     </LinearLayout>
 </ScrollView>

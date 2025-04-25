@@ -1,3 +1,4 @@
+// Updated AdminActivity.kt with navigation buttons and structure
 package com.example.nutraglow
 
 import android.app.Activity
@@ -23,7 +24,7 @@ class AdminActivity : AppCompatActivity() {
     private lateinit var selectImageButton: Button
     private lateinit var addProductButton: Button
     private lateinit var logoutButton: Button
-    private lateinit var previewImageView: ImageView  // ✅ Added preview for selected image
+    private lateinit var previewImageView: ImageView
 
     private var imageUri: Uri? = null
 
@@ -31,42 +32,48 @@ class AdminActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_admin)
 
-        // Initialize Firebase references
         databaseProducts = FirebaseDatabase.getInstance().getReference("products")
         storageReference = FirebaseStorage.getInstance()
 
-        // Initialize UI elements
         productNameInput = findViewById(R.id.productName)
         productPriceInput = findViewById(R.id.productPrice)
         productDescriptionInput = findViewById(R.id.productDescription)
-        productImageUrlInput = findViewById(R.id.productImageUrl) // ✅ Fixed ID typo
+        productImageUrlInput = findViewById(R.id.productImageUrl)
         selectImageButton = findViewById(R.id.selectImageButton)
         addProductButton = findViewById(R.id.addProductButton)
         logoutButton = findViewById(R.id.logoutButton)
-        previewImageView = findViewById(R.id.productImagePreview) // ✅ Added image preview
+        previewImageView = findViewById(R.id.productImagePreview)
 
-        // ✅ Select image from device
         selectImageButton.setOnClickListener {
             val intent = Intent(Intent.ACTION_GET_CONTENT)
             intent.type = "image/*"
             startActivityForResult(intent, IMAGE_PICK_CODE)
         }
 
-        // ✅ Add product to Firebase
         addProductButton.setOnClickListener {
             addProductToDatabase()
         }
 
-        // ✅ Logout user
         logoutButton.setOnClickListener {
             FirebaseAuth.getInstance().signOut()
             startActivity(Intent(this, SignInActivity::class.java))
             finish()
         }
 
-        val viewOrdersButton: Button = findViewById(R.id.viewOrdersButton)
-        viewOrdersButton.setOnClickListener {
+        findViewById<Button>(R.id.viewOrdersButton).setOnClickListener {
             startActivity(Intent(this, AdminOrdersActivity::class.java))
+        }
+
+        findViewById<Button>(R.id.viewCustomersButton).setOnClickListener {
+            startActivity(Intent(this, AdminCustomersActivity::class.java))
+        }
+
+        findViewById<Button>(R.id.viewVendorsButton).setOnClickListener {
+            startActivity(Intent(this, AdminVendorsActivity::class.java))
+        }
+
+        findViewById<Button>(R.id.viewPaymentsButton).setOnClickListener {
+            startActivity(Intent(this, AdminPaymentsActivity::class.java))
         }
     }
 
@@ -84,12 +91,9 @@ class AdminActivity : AppCompatActivity() {
         val productId = databaseProducts.push().key ?: return
         val currentUser = FirebaseAuth.getInstance().currentUser?.uid ?: "unknown"
 
-        // ✅ If an image URL is provided, use it directly
         if (imageUrl.isNotEmpty()) {
             saveProductToDatabase(productId, name, price, description, imageUrl, currentUser)
-        }
-        // ✅ If an image is selected from device, upload to Firebase
-        else if (imageUri != null) {
+        } else if (imageUri != null) {
             val imageRef = storageReference.reference.child("product_images/$productId.jpg")
             imageRef.putFile(imageUri!!)
                 .addOnSuccessListener {
@@ -100,9 +104,7 @@ class AdminActivity : AppCompatActivity() {
                 .addOnFailureListener {
                     Toast.makeText(this, "Image upload failed!", Toast.LENGTH_SHORT).show()
                 }
-        }
-        // ✅ If neither an image nor a URL is provided, show an error
-        else {
+        } else {
             Toast.makeText(this, "Please provide an image URL or select an image!", Toast.LENGTH_SHORT).show()
         }
     }
@@ -115,14 +117,7 @@ class AdminActivity : AppCompatActivity() {
         imageUrl: String,
         owner: String
     ) {
-        val product = Product(
-            productId = productId,
-            name = name,
-            price = price,
-            description = description,
-            imageUrl = imageUrl,
-            owner = owner
-        )
+        val product = Product(productId, name, price, description, imageUrl, owner)
         databaseProducts.child(productId).setValue(product)
             .addOnSuccessListener {
                 Toast.makeText(this, "Product added!", Toast.LENGTH_SHORT).show()
@@ -139,7 +134,7 @@ class AdminActivity : AppCompatActivity() {
         productDescriptionInput.text.clear()
         productImageUrlInput.text.clear()
         imageUri = null
-        previewImageView.setImageResource(0) // ✅ Clear image preview
+        previewImageView.setImageResource(0)
         selectImageButton.text = "Select Image"
     }
 
@@ -148,8 +143,6 @@ class AdminActivity : AppCompatActivity() {
         if (requestCode == IMAGE_PICK_CODE && resultCode == Activity.RESULT_OK) {
             imageUri = data?.data
             selectImageButton.text = "Image Selected"
-
-            // ✅ Show preview of selected image
             previewImageView.setImageURI(imageUri)
         }
     }

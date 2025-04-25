@@ -2,14 +2,10 @@ package com.example.nutraglow
 
 import android.content.Intent
 import android.os.Bundle
-import android.widget.Button
-import android.widget.EditText
-import android.widget.ProgressBar
-import android.widget.TextView
-import android.widget.Toast
+import android.widget.*
 import androidx.appcompat.app.AppCompatActivity
 import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.database.FirebaseDatabase
+import com.google.firebase.database.*
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -97,7 +93,7 @@ class ManualPaymentActivity : AppCompatActivity() {
             progressBar.visibility = ProgressBar.VISIBLE
             statusText.text = "Processing Payment..."
 
-            placeOrder(name, address, phone, email, "Paid via Manual Entry")
+            processPayment()
         }
 
         cancelButton.setOnClickListener {
@@ -105,35 +101,86 @@ class ManualPaymentActivity : AppCompatActivity() {
         }
     }
 
-    private fun placeOrder(
-        name: String,
-        address: String,
-        phone: String,
-        email: String,
-        paymentMethod: String
-    ) {
-        val userId = FirebaseAuth.getInstance().currentUser?.uid ?: ""
+    private fun processPayment() {
+        val userId = FirebaseAuth.getInstance().currentUser?.uid ?: return
         val orderId = FirebaseDatabase.getInstance().reference.push().key ?: System.currentTimeMillis().toString()
+        val cartRef = FirebaseDatabase.getInstance().getReference("cart")
+        val productRef = FirebaseDatabase.getInstance().getReference("products")
+        val paymentRef = FirebaseDatabase.getInstance().getReference("payments")
+        val orderRef = FirebaseDatabase.getInstance().getReference("orders")
 
-        val order = Order(
-            orderId = orderId,
-            userId = userId,
-            customerName = name,
-            address = address,
-            phone = phone,
-            email = email,
-            paymentMethod = paymentMethod,
-            totalAmount = totalAmount,
-            status = "Confirmed"
-        )
+        cartRef.get().addOnSuccessListener { snapshot ->
+            val productIds = mutableListOf<String>()
+            val vendorPayments = mutableMapOf<String, Double>()
+            val productStatusMap = mutableMapOf<String, String>()
+            val productOwnerMap = mutableMapOf<String, String>()
 
-        FirebaseDatabase.getInstance().getReference("orders").child(orderId).setValue(order)
-            .addOnSuccessListener {
-                Toast.makeText(this, "Payment Successful. Tracking available.", Toast.LENGTH_LONG).show()
-                startActivity(Intent(this, OrderTrackingActivity::class.java).apply {
-                    putExtra("ORDER_ID", orderId)
-                })
-                finish()
+            val children = snapshot.children.toList()
+            if (children.isEmpty()) {
+                Toast.makeText(this, "Cart is empty", Toast.LENGTH_SHORT).show()
+                return@addOnSuccessListener
             }
+
+            var remaining = children.size
+
+            for (item in children) {
+                val productId = item.child("productId").getValue(String::class.java) ?: continue
+                val price = item.child("price").getValue(Double::class.java) ?: 0.0
+                productIds.add(productId)
+                productStatusMap[productId] = "Confirmed"
+
+                productRef.child(productId).child("owner").get().addOnSuccessListener { ownerSnap ->
+                    val vendorId = ownerSnap.value?.toString() ?: "unknown"
+                    productOwnerMap[productId] = vendorId
+                    vendorPayments[vendorId] = (vendorPayments[vendorId] ?: 0.0) + price
+
+                    remaining--
+                    if (remaining == 0) {
+                        val order = Order(
+                            orderId = orderId,
+                            userId = userId,
+                            customerName = name,
+                            address = address,
+                            phone = phone,
+                            email = email,
+                            paymentMethod = "Paid via Manual Entry",
+                            totalAmount = totalAmount,
+                            totalItems = totalItems,
+                            status = "Confirmed",
+                            productIds = productIds,
+                            productStatusMap = productStatusMap
+                        )
+
+                        orderRef.child(orderId).setValue(order)
+
+                        for ((vendorId, amount) in vendorPayments) {
+                            val vendorProductIds = productOwnerMap.filterValues { it == vendorId }.keys.toList()
+
+                            val payment = mapOf(
+                                "user" to userId,
+                                "vendorId" to vendorId,
+                                "amount" to amount,
+                                "method" to "Paid via Manual Entry",
+                                "productIds" to vendorProductIds,
+                                "timestamp" to System.currentTimeMillis()
+                            )
+
+                            val paymentId = paymentRef.push().key ?: UUID.randomUUID().toString()
+                            paymentRef.child(paymentId).setValue(payment)
+                        }
+
+                        cartRef.removeValue()
+
+                        Toast.makeText(this, "Payment Successful. Tracking available.", Toast.LENGTH_LONG).show()
+                        startActivity(Intent(this, OrderTrackingActivity::class.java).apply {
+                            putExtra("ORDER_ID", orderId)
+                        })
+                        finish()
+                    }
+                }
+            }
+        }.addOnFailureListener {
+            Toast.makeText(this, "Failed to retrieve cart items", Toast.LENGTH_SHORT).show()
+        }
     }
 }

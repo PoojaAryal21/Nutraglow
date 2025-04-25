@@ -11,5 +11,11 @@ data class Order(
     val totalAmount: Double = 0.0,
     val totalItems: Int = 0,
     var status: String = "Pending",
-    val statusHistory: List<OrderStatus>? = null // ← updated
+    val statusHistory: List<OrderStatus>? = null,
+    val productIds: List<String> = emptyList(),
+    val productStatusMap: Map<String, String> = emptyMap() // productId -> status ("Pending", "Shipped", etc.)
 )
+
+
+
+

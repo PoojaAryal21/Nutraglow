@@ -1,7 +1,5 @@
 <resources>
     <string name="app_name">Nutraglow</string>
-    <string name="product_price">Price: Rs.%s</string>
-    <string name="product_description">Description: %s</string>
     <string name="error_no_order_id">No order ID provided.</string>
     <string name="error_order_not_found">Order not found.</string>
     <string name="status_placeholder">Status: %1$s</string>
@@ -19,6 +17,20 @@
     <string name="pay_with_khalti">Pay with Khalti</string>
     <string name="place_order">Place Order</string>
 
+
+    <string name="loading_payments">Loading payments...</string>
+
+    <string name="vendor_loading">Vendor: loading...</string>
+    <string name="add_new_product">Add a New Product</string>
+    <string name="product_name">Product Name</string>
+    <string name="product_price">Product Price: Rs.%s</string>
+    <string name="product_description">Product Description</string>
+    <string name="image_url">Image URL</string>
+    <string name="add_product">Add Product</string>
+    <string name="your_products">Your Products</string>
+    <string name="view_customer_orders">View Customer Orders</string>
+    <string name="view_payments">View Payments</string>
+    <string name="logout">Logout</string>
 
 
 </resources>

@@ -34,7 +34,7 @@
         <activity android:name=".RegisterActivity" />
         <activity android:name=".SignInActivity" />
         <activity android:name=".CartActivity" />
-        <activity android:name=".VendorActivity" />
+        <activity android:name=".VendorDashboardActivity" />
         <activity android:name=".CustomerActivity" />
         <activity android:name=".PaymentActivity" />
         <activity android:name=".PaymentFailedActivity" />
@@ -46,6 +46,15 @@
         <activity android:name=".AccountActivity" />
         <activity android:name=".ManualPaymentActivity" />
         <activity android:name=".OrderHistoryActivity" />
+        <activity android:name=".AdminVendorsActivity" />
+        <activity android:name=".AdminCustomersActivity" />
+        <activity android:name=".AdminPaymentsActivity" />
+        <activity android:name=".VendorOrdersActivity" />
+        <activity android:name=".VendorPaymentsActivity" />
+        <activity android:name=".ProductDetailActivity" />
+
+
+
     </application>
 
 </manifest>

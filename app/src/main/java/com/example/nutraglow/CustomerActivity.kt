@@ -4,10 +4,7 @@ import android.content.Intent
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
-import android.widget.Button
-import android.widget.EditText
-import android.widget.TextView
-import android.widget.Toast
+import android.widget.*
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -22,11 +19,14 @@ class CustomerActivity : AppCompatActivity() {
     private lateinit var productList: MutableList<Product>
     private lateinit var filteredList: MutableList<Product>
     private lateinit var databaseReference: DatabaseReference
+
     private lateinit var logoutButton: Button
     private lateinit var goToCartButton: Button
     private lateinit var searchInput: EditText
     private lateinit var sortByPriceButton: Button
     private lateinit var sortByNameButton: Button
+    private lateinit var emptyStateText: TextView
+
     private lateinit var navCart: Button
     private lateinit var navAccount: Button
     private lateinit var navHome: Button
@@ -40,6 +40,7 @@ class CustomerActivity : AppCompatActivity() {
 
         productList = mutableListOf()
         filteredList = mutableListOf()
+
         productAdapter = ProductAdapter(
             productList = filteredList,
             isCart = false,
@@ -64,32 +65,25 @@ class CustomerActivity : AppCompatActivity() {
         searchInput = findViewById(R.id.searchInput)
         sortByPriceButton = findViewById(R.id.sortByPriceButton)
         sortByNameButton = findViewById(R.id.sortByNameButton)
+        emptyStateText = findViewById(R.id.emptyText)
 
         navCart = findViewById(R.id.navCart)
         navAccount = findViewById(R.id.navAccount)
         navHome = findViewById(R.id.navHome)
 
         logoutButton.setOnClickListener { logoutUser() }
-        goToCartButton.setOnClickListener {
-            startActivity(Intent(this, CartActivity::class.java))
-        }
+        goToCartButton.setOnClickListener { startActivity(Intent(this, CartActivity::class.java)) }
 
-        navCart.setOnClickListener {
-            startActivity(Intent(this, CartActivity::class.java))
-        }
-        navAccount.setOnClickListener {
-            startActivity(Intent(this, AccountActivity::class.java))
-        }
-        navHome.setOnClickListener {
-            startActivity(Intent(this, CustomerActivity::class.java))
-        }
+        navCart.setOnClickListener { startActivity(Intent(this, CartActivity::class.java)) }
+        navAccount.setOnClickListener { startActivity(Intent(this, AccountActivity::class.java)) }
+        navHome.setOnClickListener { recreate() }
 
         searchInput.addTextChangedListener(object : TextWatcher {
+            override fun afterTextChanged(s: Editable?) {}
             override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
                 filterProducts(s.toString())
             }
-            override fun afterTextChanged(s: Editable?) {}
         })
 
         sortByPriceButton.setOnClickListener {
@@ -111,9 +105,7 @@ class CustomerActivity : AppCompatActivity() {
                 productList.clear()
                 for (productSnapshot in snapshot.children) {
                     val product = productSnapshot.getValue(Product::class.java)
-                    if (product != null) {
-                        productList.add(product)
-                    }
+                    if (product != null) productList.add(product)
                 }
                 filterProducts(searchInput.text.toString())
             }
@@ -125,13 +117,14 @@ class CustomerActivity : AppCompatActivity() {
     }
 
     private fun filterProducts(query: String) {
-        val lowerCaseQuery = query.lowercase(Locale.ROOT)
+        val lowerQuery = query.lowercase(Locale.ROOT)
         filteredList.clear()
         filteredList.addAll(productList.filter {
-            it.name?.lowercase(Locale.ROOT)?.contains(lowerCaseQuery) == true ||
-                    it.description?.lowercase(Locale.ROOT)?.contains(lowerCaseQuery) == true
+            it.name?.lowercase(Locale.ROOT)?.contains(lowerQuery) == true ||
+                    it.description?.lowercase(Locale.ROOT)?.contains(lowerQuery) == true
         })
         productAdapter.notifyDataSetChanged()
+        emptyStateText.visibility = if (filteredList.isEmpty()) TextView.VISIBLE else TextView.GONE
     }
 
     private fun logoutUser() {

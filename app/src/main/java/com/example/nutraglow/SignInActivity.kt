@@ -51,7 +51,7 @@ class SignInActivity : AppCompatActivity() {
                         val role = it.child("role").value.toString()
                         when (role.lowercase()) {
                             "admin" -> startActivity(Intent(this, AdminActivity::class.java))
-                            "vendor" -> startActivity(Intent(this, VendorActivity::class.java))
+                            "vendor" -> startActivity(Intent(this, VendorDashboardActivity::class.java))
                             "customer" -> startActivity(Intent(this, CustomerActivity::class.java))
                             else -> Toast.makeText(this, "Invalid role!", Toast.LENGTH_SHORT).show()
                         }

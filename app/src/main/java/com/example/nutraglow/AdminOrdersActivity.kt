@@ -22,11 +22,13 @@ class AdminOrdersActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_admin_orders)
 
+        // Initialize RecyclerView
         ordersRecyclerView = findViewById(R.id.adminOrdersRecyclerView)
         ordersRecyclerView.layoutManager = LinearLayoutManager(this)
         ordersAdapter = OrdersAdapter(ordersList, isAdmin = true)
         ordersRecyclerView.adapter = ordersAdapter
 
+        // Setup search input
         val searchInput = findViewById<EditText>(R.id.searchOrdersInput)
         searchInput.addTextChangedListener(object : TextWatcher {
             override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
@@ -36,6 +38,7 @@ class AdminOrdersActivity : AppCompatActivity() {
             override fun afterTextChanged(s: Editable?) {}
         })
 
+        // Load orders from Firebase
         fetchOrders()
     }
 
@@ -44,24 +47,40 @@ class AdminOrdersActivity : AppCompatActivity() {
             override fun onDataChange(snapshot: DataSnapshot) {
                 fullOrdersList.clear()
                 for (orderSnapshot in snapshot.children) {
-                    val order = orderSnapshot.getValue(Order::class.java)
-                    order?.let { fullOrdersList.add(it) }
+                    try {
+                        val order = orderSnapshot.getValue(Order::class.java)
+                        if (order != null) {
+                            fullOrdersList.add(order)
+                        }
+                    } catch (e: Exception) {
+                        Toast.makeText(
+                            this@AdminOrdersActivity,
+                            "Error parsing order data: ${e.message}",
+                            Toast.LENGTH_SHORT
+                        ).show()
+                    }
                 }
+                // Refresh visible list
                 ordersList.clear()
                 ordersList.addAll(fullOrdersList)
                 ordersAdapter.notifyDataSetChanged()
             }
 
             override fun onCancelled(error: DatabaseError) {
-                Toast.makeText(this@AdminOrdersActivity, "Failed to load orders", Toast.LENGTH_SHORT).show()
+                Toast.makeText(
+                    this@AdminOrdersActivity,
+                    "Failed to load orders: ${error.message}",
+                    Toast.LENGTH_SHORT
+                ).show()
             }
         })
     }
 
     private fun filterOrders(query: String) {
+        val lowerQuery = query.lowercase().trim()
         val filtered = fullOrdersList.filter {
-            it.customerName.contains(query, ignoreCase = true) ||
-                    it.status.contains(query, ignoreCase = true)
+            (it.customerName?.lowercase()?.contains(lowerQuery) == true) ||
+                    (it.status?.lowercase()?.contains(lowerQuery) == true)
         }
         ordersList.clear()
         ordersList.addAll(filtered)
