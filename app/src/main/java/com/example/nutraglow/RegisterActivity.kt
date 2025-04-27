@@ -2,7 +2,9 @@ package com.example.nutraglow
 
 import android.content.Intent
 import android.os.Bundle
+import android.text.InputType
 import android.text.TextUtils
+import android.view.MotionEvent
 import android.widget.*
 import androidx.appcompat.app.AppCompatActivity
 import com.google.firebase.auth.FirebaseAuth
@@ -18,6 +20,8 @@ class RegisterActivity : AppCompatActivity() {
     private lateinit var roleSpinner: Spinner
     private lateinit var registerButton: Button
     private lateinit var signInButton: Button
+
+    private var isPasswordVisible = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -35,7 +39,8 @@ class RegisterActivity : AppCompatActivity() {
         val roles = arrayOf("Select Role", "Admin", "Vendor", "Customer")
         roleSpinner.adapter = ArrayAdapter(this, android.R.layout.simple_spinner_dropdown_item, roles)
 
-        // Redirect to Sign-In Activity
+        setupPasswordToggle()
+
         signInButton.setOnClickListener {
             startActivity(Intent(this, SignInActivity::class.java))
             finish()
@@ -51,20 +56,73 @@ class RegisterActivity : AppCompatActivity() {
                 return@setOnClickListener
             }
 
+            val passwordError = validatePassword(password)
+            if (passwordError != null) {
+                Toast.makeText(this, passwordError, Toast.LENGTH_LONG).show()
+                return@setOnClickListener
+            }
+
             mAuth.createUserWithEmailAndPassword(email, password).addOnCompleteListener { task ->
                 if (task.isSuccessful) {
                     val userId = mAuth.currentUser!!.uid
                     val newUser = User(userId, email, role.lowercase())
 
                     database.child(userId).setValue(newUser).addOnSuccessListener {
-                        Toast.makeText(this, "Registration successful!", Toast.LENGTH_SHORT).show()
-                        startActivity(Intent(this, SignInActivity::class.java))
-                        finish()
+                        mAuth.currentUser?.sendEmailVerification()?.addOnSuccessListener {
+                            Toast.makeText(this, "Verification email sent! Please verify.", Toast.LENGTH_LONG).show()
+                            mAuth.signOut()
+                            startActivity(Intent(this, SignInActivity::class.java))
+                            finish()
+                        }?.addOnFailureListener {
+                            Toast.makeText(this, "Failed to send verification email.", Toast.LENGTH_SHORT).show()
+                        }
                     }
                 } else {
                     Toast.makeText(this, "Error: ${task.exception?.message}", Toast.LENGTH_LONG).show()
                 }
             }
         }
+    }
+
+    private fun setupPasswordToggle() {
+        passwordField.setOnTouchListener { _, event ->
+            if (event.action == MotionEvent.ACTION_UP) {
+                val drawableRight = passwordField.compoundDrawables[2]
+                if (drawableRight != null && event.rawX >= (passwordField.right - drawableRight.bounds.width())) {
+                    isPasswordVisible = !isPasswordVisible
+                    if (isPasswordVisible) {
+                        passwordField.inputType = InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD
+                        passwordField.setCompoundDrawablesWithIntrinsicBounds(0, 0, R.drawable.ic_visibility, 0)
+                    } else {
+                        passwordField.inputType = InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_VARIATION_PASSWORD
+                        passwordField.setCompoundDrawablesWithIntrinsicBounds(0, 0, R.drawable.ic_visibility_off, 0)
+                    }
+                    passwordField.setSelection(passwordField.text.length)
+
+                    passwordField.performClick() // accessibility fix
+
+                    return@setOnTouchListener true
+                }
+            }
+            false
+        }
+    }
+
+
+
+    private fun validatePassword(password: String): String? {
+        if (password.length < 6) {
+            return "Password must be at least 6 characters."
+        }
+        if (!password.any { it.isUpperCase() }) {
+            return "Password must contain an uppercase letter."
+        }
+        if (!password.any { it.isDigit() }) {
+            return "Password must contain a number."
+        }
+        if (!password.any { "!@#\$%^&*()_+-=[]|,./?><".contains(it) }) {
+            return "Password must contain a special character."
+        }
+        return null
     }
 }

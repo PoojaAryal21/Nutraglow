@@ -1,0 +1,32 @@
+<resources>
+    <string name="app_name">न्यूट्राग्लो</string>
+    <string name="error_no_order_id">अर्डर आईडी दिइएको छैन।</string>
+    <string name="error_order_not_found">अर्डर फेला परेन।</string>
+    <string name="status_placeholder">स्थिति: %1$s</string>
+    <string name="order_details_placeholder">नाम: %1$s\nठेगाना: %2$s\nविधि: %3$s\nसमय: %4$s</string>
+    <string name="estimated_delivery_placeholder">अनुमानित डेलिभरी: ३-५ कार्य दिनहरू</string>
+    <string name="error_loading_order">अर्डर विवरण लोड गर्न असफल।</string>
+
+    <string name="checkout">चेकआउट</string>
+    <string name="full_name">पूरा नाम</string>
+    <string name="address">ठेगाना</string>
+    <string name="phone_number">फोन नम्बर</string>
+    <string name="email_address">इमेल ठेगाना</string>
+    <string name="cash_on_delivery">डेलिभरीमा नगद</string>
+    <string name="pay_with_khalti">खल्तीबाट तिर्नुहोस्</string>
+    <string name="place_order">अर्डर गर्नुहोस्</string>
+
+    <string name="loading_payments">भुक्तानी लोड हुँदैछ...</string>
+
+    <string name="vendor_loading">बिक्रेता: लोड हुँदैछ...</string>
+    <string name="add_new_product">नयाँ उत्पादन थप्नुहोस्</string>
+    <string name="product_name">उत्पादनको नाम</string>
+    <string name="product_price">उत्पादन मूल्य: रु.%s</string>
+    <string name="product_description">उत्पादनको विवरण</string>
+    <string name="image_url">तस्बिर URL</string>
+    <string name="add_product">उत्पादन थप्नुहोस्</string>
+    <string name="your_products">तपाईंका उत्पादनहरू</string>
+    <string name="view_customer_orders">ग्राहक अर्डरहरू हेर्नुहोस्</string>
+    <string name="view_payments">भुक्तानीहरू हेर्नुहोस्</string>
+    <string name="logout">लगआउट गर्नुहोस्</string>
+</resources>
