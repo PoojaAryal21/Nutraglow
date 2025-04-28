@@ -31,9 +31,15 @@ class CustomerActivity : AppCompatActivity() {
     private lateinit var navAccount: Button
     private lateinit var navHome: Button
 
+    private var isGuestUser = false
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_customer)
+
+        isGuestUser = intent.getBooleanExtra("isGuest", false)
+
+        val currentUserId = if (isGuestUser) "guest" else FirebaseAuth.getInstance().currentUser?.uid ?: "guest"
 
         recyclerView = findViewById(R.id.recyclerViewProduct)
         recyclerView.layoutManager = GridLayoutManager(this, 2)
@@ -45,6 +51,7 @@ class CustomerActivity : AppCompatActivity() {
             productList = filteredList,
             isCart = false,
             showDescription = false,
+            userId = currentUserId,
             onItemClick = { product ->
                 val intent = Intent(this, ProductDetailActivity::class.java).apply {
                     putExtra("productId", product.productId ?: "")
@@ -72,10 +79,9 @@ class CustomerActivity : AppCompatActivity() {
         navHome = findViewById(R.id.navHome)
 
         logoutButton.setOnClickListener { logoutUser() }
-        goToCartButton.setOnClickListener { startActivity(Intent(this, CartActivity::class.java)) }
-
-        navCart.setOnClickListener { startActivity(Intent(this, CartActivity::class.java)) }
-        navAccount.setOnClickListener { startActivity(Intent(this, AccountActivity::class.java)) }
+        goToCartButton.setOnClickListener { openCart() }
+        navCart.setOnClickListener { openCart() }
+        navAccount.setOnClickListener { openAccount() }
         navHome.setOnClickListener { recreate() }
 
         searchInput.addTextChangedListener(object : TextWatcher {
@@ -111,7 +117,7 @@ class CustomerActivity : AppCompatActivity() {
             }
 
             override fun onCancelled(error: DatabaseError) {
-                Toast.makeText(this@CustomerActivity, "Failed to load products: ${error.message}", Toast.LENGTH_SHORT).show()
+                Toast.makeText(this@CustomerActivity, "Failed to load products: ${'$'}{error.message}", Toast.LENGTH_SHORT).show()
             }
         })
     }
@@ -131,5 +137,19 @@ class CustomerActivity : AppCompatActivity() {
         FirebaseAuth.getInstance().signOut()
         startActivity(Intent(this, SignInActivity::class.java))
         finish()
+    }
+
+    private fun openCart() {
+        val intent = Intent(this, CartActivity::class.java)
+        intent.putExtra("isGuest", isGuestUser)
+        startActivity(intent)
+    }
+
+    private fun openAccount() {
+        if (isGuestUser) {
+            Toast.makeText(this, "Please sign in to access your account.", Toast.LENGTH_SHORT).show()
+        } else {
+            startActivity(Intent(this, AccountActivity::class.java))
+        }
     }
 }

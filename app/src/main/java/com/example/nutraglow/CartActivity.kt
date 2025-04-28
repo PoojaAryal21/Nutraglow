@@ -24,11 +24,15 @@ class CartActivity : AppCompatActivity() {
     private lateinit var navCart: Button
     private lateinit var navAccount: Button
 
+    private var userId: String = "guest"
     private val cartKeyMap = mutableMapOf<String, String>()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_cart)
+
+        val firebaseUser = FirebaseAuth.getInstance().currentUser
+        userId = firebaseUser?.uid ?: "guest"
 
         recyclerView = findViewById(R.id.recyclerViewCart)
         recyclerView.layoutManager = LinearLayoutManager(this)
@@ -41,20 +45,27 @@ class CartActivity : AppCompatActivity() {
         navAccount = findViewById(R.id.navAccount)
 
         navHome.setOnClickListener {
-            startActivity(Intent(this, CustomerActivity::class.java))
+            val intent = Intent(this, CustomerActivity::class.java)
+            intent.putExtra("isGuest", userId == "guest")
+            startActivity(intent)
         }
-        navCart.setOnClickListener {
-            startActivity(Intent(this, CartActivity::class.java))
-        }
+
+        navCart.setOnClickListener { recreate() }
+
         navAccount.setOnClickListener {
-            startActivity(Intent(this, AccountActivity::class.java))
+            if (userId == "guest") {
+                Toast.makeText(this, "Please sign in first.", Toast.LENGTH_SHORT).show()
+                startActivity(Intent(this, SignInActivity::class.java))
+            } else {
+                startActivity(Intent(this, AccountActivity::class.java))
+            }
         }
 
         cartList = mutableListOf()
-        productAdapter = ProductAdapter(cartList, isCart = true)
+        productAdapter = ProductAdapter(cartList, isCart = true, userId = userId)
         recyclerView.adapter = productAdapter
 
-        databaseReference = FirebaseDatabase.getInstance().getReference("cart")
+        databaseReference = FirebaseDatabase.getInstance().getReference("carts").child(userId).child("products")
 
         fetchCartItems()
 
@@ -62,16 +73,19 @@ class CartActivity : AppCompatActivity() {
         logoutButton.setOnClickListener { logoutUser() }
 
         proceedToPayButton.setOnClickListener {
-            val total = cartList.sumOf { (it.quantity ?: 1) * (it.price ?: 0.0) }
-            val totalItems = cartList.sumOf { it.quantity ?: 1 }
+            if (userId == "guest") {
+                Toast.makeText(this, "You need to Sign In to checkout.", Toast.LENGTH_SHORT).show()
+                startActivity(Intent(this, SignInActivity::class.java))
+            } else {
+                val total = cartList.sumOf { (it.quantity ?: 1) * (it.price ?: 0.0) }
+                val totalItems = cartList.sumOf { it.quantity ?: 1 }
 
-            val intent = Intent(this, CheckoutActivity::class.java).apply {
-                putExtra("TOTAL_AMOUNT", total)
-                putExtra("TOTAL_ITEMS", totalItems)
+                val intent = Intent(this, CheckoutActivity::class.java).apply {
+                    putExtra("TOTAL_AMOUNT", total)
+                    putExtra("TOTAL_ITEMS", totalItems)
+                }
+                startActivity(intent)
             }
-
-            startActivity(intent)
-
         }
     }
 

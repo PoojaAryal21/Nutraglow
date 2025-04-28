@@ -22,6 +22,7 @@ class MainActivity : AppCompatActivity() {
 
         val signInButton = findViewById<Button>(R.id.signInButton)
         val registerButton = findViewById<Button>(R.id.registerButton)
+        val guestButton = findViewById<Button>(R.id.guestButton) // NEW
 
         // ✅ Request POST_NOTIFICATIONS permission on Android 13+
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
@@ -38,18 +39,21 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
-        signInButton.setOnClickListener { v: View? ->
-            val intent = Intent(this@MainActivity, SignInActivity::class.java)
-            startActivity(intent)
+        signInButton.setOnClickListener {
+            startActivity(Intent(this@MainActivity, SignInActivity::class.java))
         }
 
-        registerButton.setOnClickListener { v: View? ->
-            val intent = Intent(this@MainActivity, RegisterActivity::class.java)
+        registerButton.setOnClickListener {
+            startActivity(Intent(this@MainActivity, RegisterActivity::class.java))
+        }
+
+        guestButton.setOnClickListener {
+            val intent = Intent(this@MainActivity, CustomerActivity::class.java)
+            intent.putExtra("isGuest", true) // Pass that it's a guest user
             startActivity(intent)
         }
     }
 
-    // ✅ Optional: handle result of permission request
     override fun onRequestPermissionsResult(
         requestCode: Int,
         permissions: Array<out String>,

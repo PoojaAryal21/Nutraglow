@@ -8,6 +8,8 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.*
+import androidx.appcompat.app.AlertDialog
+
 
 class VendorDashboardActivity : AppCompatActivity() {
 
@@ -25,6 +27,8 @@ class VendorDashboardActivity : AppCompatActivity() {
     private lateinit var productRecyclerView: RecyclerView
     private lateinit var productAdapter: ProductAdapter
     private val vendorProducts = mutableListOf<Product>()
+
+    private var vendorId: String = ""
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -44,7 +48,18 @@ class VendorDashboardActivity : AppCompatActivity() {
 
         productRecyclerView = findViewById(R.id.vendorProductRecyclerView)
         productRecyclerView.layoutManager = LinearLayoutManager(this)
-        productAdapter = ProductAdapter(vendorProducts, isCart = false, showDescription = false)
+
+        vendorId = FirebaseAuth.getInstance().currentUser?.uid ?: ""
+
+        // ✅ Pass vendorId to ProductAdapter
+        productAdapter = ProductAdapter(
+            productList = vendorProducts,
+            isCart = false,
+            showDescription = true,
+            userId = vendorId,
+            onItemClick = null,
+            onDeleteClick = { deleteProduct(it) }
+        )
         productRecyclerView.adapter = productAdapter
 
         displayVendorEmail()
@@ -52,12 +67,8 @@ class VendorDashboardActivity : AppCompatActivity() {
 
         addProductButton.setOnClickListener { addProduct() }
         logoutButton.setOnClickListener { logoutUser() }
-        viewOrdersButton.setOnClickListener {
-            startActivity(Intent(this, VendorOrdersActivity::class.java))
-        }
-        viewPaymentsButton.setOnClickListener {
-            startActivity(Intent(this, VendorPaymentsActivity::class.java))
-        }
+        viewOrdersButton.setOnClickListener { startActivity(Intent(this, VendorOrdersActivity::class.java)) }
+        viewPaymentsButton.setOnClickListener { startActivity(Intent(this, VendorPaymentsActivity::class.java)) }
     }
 
     private fun displayVendorEmail() {
@@ -69,8 +80,6 @@ class VendorDashboardActivity : AppCompatActivity() {
     }
 
     private fun fetchVendorProducts() {
-        val vendorId = FirebaseAuth.getInstance().currentUser?.uid ?: return
-
         databaseProducts.orderByChild("owner").equalTo(vendorId)
             .addValueEventListener(object : ValueEventListener {
                 override fun onDataChange(snapshot: DataSnapshot) {
@@ -93,20 +102,19 @@ class VendorDashboardActivity : AppCompatActivity() {
         val price = productPrice.text.toString().toDoubleOrNull()
         val description = productDescription.text.toString().trim()
         val imageUrl = productImage.text.toString().trim()
-        val userId = FirebaseAuth.getInstance().currentUser?.uid
 
         if (name.isEmpty() || price == null || description.isEmpty() || imageUrl.isEmpty()) {
             Toast.makeText(this, "All fields are required.", Toast.LENGTH_SHORT).show()
             return
         }
 
-        if (userId == null) {
+        if (vendorId.isEmpty()) {
             Toast.makeText(this, "You must be logged in.", Toast.LENGTH_SHORT).show()
             return
         }
 
         val productId = databaseProducts.push().key ?: return
-        val product = Product(productId, name, price, description, imageUrl, userId)
+        val product = Product(productId, name, price, description, imageUrl, vendorId)
 
         databaseProducts.child(productId).setValue(product)
             .addOnSuccessListener {
@@ -117,6 +125,33 @@ class VendorDashboardActivity : AppCompatActivity() {
                 Toast.makeText(this, "Failed to add product.", Toast.LENGTH_SHORT).show()
             }
     }
+
+    private fun deleteProduct(product: Product) {
+        val builder = AlertDialog.Builder(this)
+        builder.setTitle("Delete Product")
+        builder.setMessage("Are you sure you want to delete this product?")
+
+        builder.setPositiveButton("Yes") { dialog, _ ->
+            product.productId?.let {
+                databaseProducts.child(it).removeValue()
+                    .addOnSuccessListener {
+                        Toast.makeText(this, "Product deleted.", Toast.LENGTH_SHORT).show()
+                    }
+                    .addOnFailureListener {
+                        Toast.makeText(this, "Failed to delete product.", Toast.LENGTH_SHORT).show()
+                    }
+            }
+            dialog.dismiss()
+        }
+
+        builder.setNegativeButton("No") { dialog, _ ->
+            dialog.dismiss()
+        }
+
+        val alert = builder.create()
+        alert.show()
+    }
+
 
     private fun clearFields() {
         productName.text.clear()

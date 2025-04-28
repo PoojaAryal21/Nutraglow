@@ -67,7 +67,17 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="Register"
-            android:layout_marginBottom="20dp" />
+            android:layout_marginBottom="16dp" />
+
+        <Button
+            android:id="@+id/guestButton"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Continue as Guest"
+            android:layout_marginBottom="12dp"
+            android:backgroundTint="@android:color/darker_gray"
+            android:textColor="@android:color/white" />
+
 
         <TextView
             android:id="@+id/forgotPasswordText"
@@ -88,6 +98,7 @@
             android:visibility="gone"
             android:textSize="16sp"
             android:layout_gravity="center_horizontal" />
+
 
     </LinearLayout>
 </ScrollView>

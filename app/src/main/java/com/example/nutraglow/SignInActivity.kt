@@ -1,3 +1,4 @@
+// Updated SignInActivity.kt with 10-second Toasts
 package com.example.nutraglow
 
 import android.content.Intent
@@ -19,6 +20,7 @@ class SignInActivity : AppCompatActivity() {
     private lateinit var registerButton: Button
     private lateinit var forgotPasswordText: TextView
     private lateinit var resendEmailText: TextView
+    private lateinit var guestButton: Button
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -33,19 +35,25 @@ class SignInActivity : AppCompatActivity() {
         registerButton = findViewById(R.id.registerButton)
         forgotPasswordText = findViewById(R.id.forgotPasswordText)
         resendEmailText = findViewById(R.id.resendEmailText)
+        guestButton = findViewById(R.id.guestButton)
 
-        // Go to Register Page
+        guestButton.setOnClickListener {
+            val intent = Intent(this, CustomerActivity::class.java)
+            intent.putExtra("isGuest", true)
+            startActivity(intent)
+            finish()
+        }
+
         registerButton.setOnClickListener {
             startActivity(Intent(this, RegisterActivity::class.java))
         }
 
-        // Sign In
         signInButton.setOnClickListener {
             val email = emailField.text.toString().trim()
             val password = passwordField.text.toString().trim()
 
             if (TextUtils.isEmpty(email) || TextUtils.isEmpty(password)) {
-                Toast.makeText(this, "All fields are required.", Toast.LENGTH_SHORT).show()
+                showLongToast("All fields are required.")
                 return@setOnClickListener
             }
 
@@ -60,51 +68,56 @@ class SignInActivity : AppCompatActivity() {
                                 "admin" -> startActivity(Intent(this, AdminActivity::class.java))
                                 "vendor" -> startActivity(Intent(this, VendorDashboardActivity::class.java))
                                 "customer" -> startActivity(Intent(this, CustomerActivity::class.java))
-                                else -> Toast.makeText(this, "Invalid role!", Toast.LENGTH_SHORT).show()
+                                else -> showLongToast("Invalid role!")
                             }
                             finish()
                         }
                     } else {
-                        Toast.makeText(this, "Please verify your email first.", Toast.LENGTH_LONG).show()
+                        showLongToast("Please verify your email first.")
                         resendEmailText.visibility = TextView.VISIBLE
                         mAuth.signOut()
                     }
                 } else {
-                    Toast.makeText(this, "Login failed: ${task.exception?.message}", Toast.LENGTH_LONG).show()
+                    showLongToast("Login failed: ${task.exception?.message}")
                 }
             }
         }
 
-        // Forgot Password
         forgotPasswordText.setOnClickListener {
             val email = emailField.text.toString().trim()
             if (email.isEmpty()) {
-                Toast.makeText(this, "Please enter your email to reset password.", Toast.LENGTH_SHORT).show()
+                showLongToast("Please enter your email to reset password.")
                 return@setOnClickListener
             }
 
             mAuth.sendPasswordResetEmail(email)
                 .addOnSuccessListener {
-                    Toast.makeText(this, "Password reset email sent to $email", Toast.LENGTH_LONG).show()
+                    showLongToast("Password reset email sent to $email")
                 }
                 .addOnFailureListener { e ->
-                    Toast.makeText(this, "Error: ${e.message}", Toast.LENGTH_LONG).show()
+                    showLongToast("Error: ${e.message}")
                 }
         }
 
-        // Resend Email Verification
         resendEmailText.setOnClickListener {
             val user = mAuth.currentUser
             user?.sendEmailVerification()?.addOnSuccessListener {
-                Toast.makeText(this, "Verification email sent again!", Toast.LENGTH_SHORT).show()
+                showLongToast("Verification email sent again!")
             }?.addOnFailureListener { e ->
-                Toast.makeText(this, "Failed to resend verification: ${e.message}", Toast.LENGTH_SHORT).show()
+                showLongToast("Failed to resend verification: ${e.message}")
             }
         }
     }
 
     override fun onStart() {
         super.onStart()
-        mAuth.signOut() // Logout on start
+        mAuth.signOut()
+    }
+
+    private fun showLongToast(message: String) {
+        val toast = Toast.makeText(this, message, Toast.LENGTH_LONG)
+        toast.show()
+        android.os.Handler().postDelayed({ toast.show() }, 3500)
+        android.os.Handler().postDelayed({ toast.show() }, 7000)
     }
 }

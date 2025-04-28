@@ -13,6 +13,7 @@
         android:layout_height="wrap_content"
         android:orientation="vertical">
 
+        <!-- Product Image -->
         <ImageView
             android:id="@+id/productDetailImage"
             android:layout_width="match_parent"
@@ -20,6 +21,7 @@
             android:scaleType="centerCrop"
             android:layout_marginBottom="16dp" />
 
+        <!-- Product Name -->
         <TextView
             android:id="@+id/productDetailName"
             android:layout_width="match_parent"
@@ -29,6 +31,7 @@
             android:textStyle="bold"
             android:layout_marginBottom="8dp" />
 
+        <!-- Product Price -->
         <TextView
             android:id="@+id/productDetailPrice"
             android:layout_width="match_parent"
@@ -38,6 +41,7 @@
             android:textSize="18sp"
             android:layout_marginBottom="8dp" />
 
+        <!-- Product Description -->
         <TextView
             android:id="@+id/productDetailDescription"
             android:layout_width="match_parent"
@@ -45,5 +49,43 @@
             android:text="Product Description goes here"
             android:textSize="16sp"
             android:layout_marginBottom="16dp" />
+
+        <!-- Divider -->
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:background="#CCCCCC"
+            android:layout_marginTop="16dp"
+            android:layout_marginBottom="16dp" />
+
+        <!-- Reviews Section Header -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Customer Reviews"
+            android:textSize="18sp"
+            android:textStyle="bold"
+            android:layout_marginBottom="8dp" />
+
+        <!-- Reviews RecyclerView -->
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/reviewRecyclerView"
+            android:layout_width="match_parent"
+            android:layout_height="200dp"
+            android:scrollbars="vertical"
+            android:paddingBottom="8dp"
+            android:clipToPadding="false" />
+
+        <!-- Write Review Button -->
+        <Button
+            android:id="@+id/writeReviewButton"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Write a Review"
+            android:layout_marginTop="12dp"
+            android:backgroundTint="@android:color/holo_orange_light"
+            android:textColor="@android:color/white"
+            android:textStyle="bold" />
+
     </LinearLayout>
 </ScrollView>

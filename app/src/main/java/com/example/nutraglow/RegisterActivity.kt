@@ -10,6 +10,8 @@ import androidx.appcompat.app.AppCompatActivity
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.DatabaseReference
 import com.google.firebase.database.FirebaseDatabase
+import android.os.Handler
+import android.os.Looper
 
 class RegisterActivity : AppCompatActivity() {
 
@@ -52,13 +54,13 @@ class RegisterActivity : AppCompatActivity() {
             val role = roleSpinner.selectedItem.toString()
 
             if (TextUtils.isEmpty(email) || TextUtils.isEmpty(password) || role == "Select Role") {
-                Toast.makeText(this, "All fields are required.", Toast.LENGTH_SHORT).show()
+                showLongToast("All fields are required.")
                 return@setOnClickListener
             }
 
             val passwordError = validatePassword(password)
             if (passwordError != null) {
-                Toast.makeText(this, passwordError, Toast.LENGTH_LONG).show()
+                showLongToast(passwordError)
                 return@setOnClickListener
             }
 
@@ -69,16 +71,16 @@ class RegisterActivity : AppCompatActivity() {
 
                     database.child(userId).setValue(newUser).addOnSuccessListener {
                         mAuth.currentUser?.sendEmailVerification()?.addOnSuccessListener {
-                            Toast.makeText(this, "Verification email sent! Please verify.", Toast.LENGTH_LONG).show()
+                            showLongToast("Registration Successful. Verification email sent! Please verify.")
                             mAuth.signOut()
                             startActivity(Intent(this, SignInActivity::class.java))
                             finish()
                         }?.addOnFailureListener {
-                            Toast.makeText(this, "Failed to send verification email.", Toast.LENGTH_SHORT).show()
+                            showLongToast("Registration UnSuccessfull. Failed to send verification email.")
                         }
                     }
                 } else {
-                    Toast.makeText(this, "Error: ${task.exception?.message}", Toast.LENGTH_LONG).show()
+                    showLongToast("Error: ${task.exception?.message}")
                 }
             }
         }
@@ -98,17 +100,13 @@ class RegisterActivity : AppCompatActivity() {
                         passwordField.setCompoundDrawablesWithIntrinsicBounds(0, 0, R.drawable.ic_visibility_off, 0)
                     }
                     passwordField.setSelection(passwordField.text.length)
-
-                    passwordField.performClick() // accessibility fix
-
+                    passwordField.performClick()
                     return@setOnTouchListener true
                 }
             }
             false
         }
     }
-
-
 
     private fun validatePassword(password: String): String? {
         if (password.length < 6) {
@@ -124,5 +122,24 @@ class RegisterActivity : AppCompatActivity() {
             return "Password must contain a special character."
         }
         return null
+    }
+
+    private fun showLongToast(message: String) {
+        val toast = Toast.makeText(this, message, Toast.LENGTH_SHORT)
+        val handler = Handler(Looper.getMainLooper())
+        val delayMillis = 2000L
+        var counter = 0
+
+        toast.show()
+
+        handler.postDelayed(object : Runnable {
+            override fun run() {
+                counter++
+                if (counter < 5) {
+                    toast.show()
+                    handler.postDelayed(this, delayMillis)
+                }
+            }
+        }, delayMillis)
     }
 }

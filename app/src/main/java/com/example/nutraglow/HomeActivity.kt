@@ -2,96 +2,78 @@ package com.example.nutraglow
 
 import android.content.Intent
 import android.os.Bundle
+import android.view.View
 import android.widget.Button
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
-import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.recyclerview.widget.RecyclerView
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.*
-import kotlinx.coroutines.*
-import kotlinx.coroutines.tasks.await  // ✅ Import this!
 
 class HomeActivity : AppCompatActivity() {
 
-    private lateinit var recyclerView: RecyclerView
-    private lateinit var productAdapter: ProductAdapter
-    private lateinit var productList: ArrayList<Product>
-    private lateinit var databaseReference: DatabaseReference
     private lateinit var goToCartButton: Button
-    private lateinit var logoutButton: Button  // ✅ Logout Button
+    private lateinit var logoutButton: Button
+    private lateinit var adminButton: Button
+
+    private var isGuestUser = false
+    private var isAdmin = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_home)
 
-        // Initialize RecyclerView
-        recyclerView = findViewById(R.id.recyclerView)
-        recyclerView.layoutManager = LinearLayoutManager(this)
+        isGuestUser = intent.getBooleanExtra("isGuest", false)
 
-        // Initialize Product List and Adapter
-        productList = ArrayList()
-        productAdapter = ProductAdapter(productList, isCart = false)
-        recyclerView.adapter = productAdapter
+        goToCartButton = findViewById(R.id.goToCartButton)
+        logoutButton = findViewById(R.id.logoutButton)
+        adminButton = findViewById(R.id.adminButton)
 
-        // Firebase Database Reference
-        databaseReference = FirebaseDatabase.getInstance().getReference("products")
-
-        // Fetch Products from Firebase using coroutines
-        fetchProducts()
-
-        // Admin Button to Add New Products
-        val adminButton = findViewById<Button>(R.id.adminButton)
-        adminButton.setOnClickListener {
-            val intent = Intent(this, AdminActivity::class.java)
-            startActivity(intent)
+        if (!isGuestUser) {
+            checkIfAdmin()
         }
 
-        // Initialize "Go to Cart" Button
-        goToCartButton = findViewById(R.id.goToCartButton)
         goToCartButton.setOnClickListener {
             val intent = Intent(this, CartActivity::class.java)
+            intent.putExtra("isGuest", isGuestUser)
             startActivity(intent)
         }
 
-        // ✅ Initialize Logout Button and Click Listener
-        logoutButton = findViewById(R.id.logoutButton)
-        logoutButton.setOnClickListener { logoutUser() }
-    }
+        logoutButton.setOnClickListener {
+            FirebaseAuth.getInstance().signOut()
+            startActivity(Intent(this, SignInActivity::class.java))
+            finish()
+        }
 
-    // ✅ Optimized Fetch Products using Coroutines
-    private fun fetchProducts() {
-        CoroutineScope(Dispatchers.IO).launch {
-            try {
-                val snapshot = databaseReference.get().await()
-                withContext(Dispatchers.Main) {
-                    productList.clear()
-                    for (child in snapshot.children) {  // ✅ Fixed `it` issue
-                        val product = child.getValue(Product::class.java)
-                        if (product != null) {
-                            productList.add(product)
-                        }
-                    }
-                    productAdapter.notifyDataSetChanged()
-                }
-            } catch (e: Exception) {
-                withContext(Dispatchers.Main) {
-                    Toast.makeText(this@HomeActivity, "Failed to load products: ${e.message}", Toast.LENGTH_SHORT).show()
-                }
-            }
+        adminButton.setOnClickListener {
+            startActivity(Intent(this, AdminActivity::class.java))
         }
     }
 
-    // ✅ Optimized Logout Function with Coroutine
-    private fun logoutUser() {
-        CoroutineScope(Dispatchers.IO).launch {
-            FirebaseAuth.getInstance().signOut()
-            withContext(Dispatchers.Main) {
-                Toast.makeText(this@HomeActivity, "Logged out successfully", Toast.LENGTH_SHORT).show()
-                val intent = Intent(this@HomeActivity, SignInActivity::class.java)
-                startActivity(intent)
-                finish()  // ✅ Closes HomeActivity to prevent going back after logout
+    private fun checkIfAdmin() {
+        val currentUser = FirebaseAuth.getInstance().currentUser
+        if (currentUser != null) {
+            val databaseRef = FirebaseDatabase.getInstance().getReference("users").child(currentUser.uid)
+            databaseRef.get().addOnSuccessListener { snapshot ->
+                val role = snapshot.child("role").value?.toString()?.lowercase()
+                if (role == "admin") {
+                    adminButton.visibility = View.VISIBLE
+                    isAdmin = true
+                } else {
+                    adminButton.visibility = View.GONE
+                }
+            }.addOnFailureListener {
+                adminButton.visibility = View.GONE
             }
+        } else {
+            adminButton.visibility = View.GONE
+        }
+    }
+
+    override fun onStart() {
+        super.onStart()
+        if (!isGuestUser && FirebaseAuth.getInstance().currentUser == null) {
+            startActivity(Intent(this, SignInActivity::class.java))
+            finish()
         }
     }
 }
