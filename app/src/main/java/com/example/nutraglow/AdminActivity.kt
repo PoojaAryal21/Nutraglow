@@ -44,10 +44,10 @@ class AdminActivity : AppCompatActivity() {
         logoutButton = findViewById(R.id.logoutButton)
         previewImageView = findViewById(R.id.productImagePreview)
 
-        selectImageButton.setOnClickListener {
+        selectImageButton.setOnClickListener { /*gets image from the device*/
             val intent = Intent(Intent.ACTION_GET_CONTENT)
             intent.type = "image/*"
-            startActivityForResult(intent, IMAGE_PICK_CODE)
+            startActivityForResult(intent, IMAGE_PICK_CODE) /*image id generates*/
         }
 
         addProductButton.setOnClickListener {
@@ -94,8 +94,8 @@ class AdminActivity : AppCompatActivity() {
         if (imageUrl.isNotEmpty()) {
             saveProductToDatabase(productId, name, price, description, imageUrl, currentUser)
         } else if (imageUri != null) {
-            val imageRef = storageReference.reference.child("product_images/$productId.jpg")
-            imageRef.putFile(imageUri!!)
+            val imageRef = storageReference.reference.child("product_images/$productId.jpg") //Path to the database
+            imageRef.putFile(imageUri!!) //Save image to database
                 .addOnSuccessListener {
                     imageRef.downloadUrl.addOnSuccessListener { uri ->
                         saveProductToDatabase(productId, name, price, description, uri.toString(), currentUser)
@@ -148,6 +148,7 @@ class AdminActivity : AppCompatActivity() {
     }
 
     companion object {
-        private const val IMAGE_PICK_CODE = 1000
+        private const val IMAGE_PICK_CODE = 1000 //id code
+
     }
 }

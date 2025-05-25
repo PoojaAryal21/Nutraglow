@@ -24,7 +24,7 @@ class MainActivity : AppCompatActivity() {
         val registerButton = findViewById<Button>(R.id.registerButton)
         val guestButton = findViewById<Button>(R.id.guestButton) // NEW
 
-        // ✅ Request POST_NOTIFICATIONS permission on Android 13+
+        // Request POST_NOTIFICATIONS permission on Android 13+
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             if (ContextCompat.checkSelfPermission(
                     this,

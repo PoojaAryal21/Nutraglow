@@ -22,6 +22,7 @@ class AccountActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_account)
 
+        /* Declaring and naming according to id in activity account.xml */
         emailText = findViewById(R.id.accountEmail)
         changePasswordButton = findViewById(R.id.changePasswordButton)
         viewOrdersButton = findViewById(R.id.viewOrdersButton)

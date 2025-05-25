@@ -1,7 +1,5 @@
 package com.example.nutraglow
 
-import android.content.Intent
-import android.os.Handler
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -76,10 +74,22 @@ class ProductAdapter(
         holder.quantityText.text = product.quantity.toString()
         Glide.with(holder.itemView.context).load(product.imageUrl).into(holder.image)
 
+        // If vendor is viewing their own product, show delete button, hide Add to Cart
+        if (product.owner == userId) {
+            holder.deleteProductButton.visibility = View.VISIBLE
+            holder.addToCartButton.visibility = View.GONE
+        } else {
+            holder.deleteProductButton.visibility = View.GONE
+            setupProductItem(holder, product)
+        }
+
         if (isCart) {
             setupCartItem(holder, product, position)
         } else {
-            setupProductItem(holder, product)
+            holder.removeFromCartButton.visibility = View.GONE
+            holder.quantityText.visibility = View.GONE
+            holder.increaseQuantity.visibility = View.GONE
+            holder.decreaseQuantity.visibility = View.GONE
         }
 
         holder.deleteProductButton.setOnClickListener {
@@ -92,41 +102,41 @@ class ProductAdapter(
     }
 
     private fun setupProductItem(holder: ProductViewHolder, product: Product) {
-        holder.addToCartButton.visibility = View.VISIBLE
-        holder.removeFromCartButton.visibility = View.GONE
-        holder.quantityText.visibility = View.GONE
-        holder.increaseQuantity.visibility = View.GONE
-        holder.decreaseQuantity.visibility = View.GONE
-
-        if (cartProductIds.contains(product.productId)) {
-            holder.addToCartButton.text = "Added"
-            holder.addToCartButton.isEnabled = false
-        } else {
-            holder.addToCartButton.text = "Add to Cart"
-            holder.addToCartButton.isEnabled = true
-        }
-
-        holder.addToCartButton.setOnClickListener {
-            val productId = product.productId ?: return@setOnClickListener
-
-            if (cartProductIds.contains(productId)) {
-                Toast.makeText(holder.itemView.context, "Already in Cart", Toast.LENGTH_SHORT).show()
-                return@setOnClickListener
+        // Only show "Add to Cart" if not vendor's own product
+        if (product.owner != userId) {
+            holder.addToCartButton.visibility = View.VISIBLE
+            if (cartProductIds.contains(product.productId)) {
+                holder.addToCartButton.text = "Added"
+                holder.addToCartButton.isEnabled = false
+            } else {
+                holder.addToCartButton.text = "Add to Cart"
+                holder.addToCartButton.isEnabled = true
             }
 
-            val cartItemId = cartRef.push().key ?: return@setOnClickListener
-            val cartItem = product.copy(quantity = 1)
+            holder.addToCartButton.setOnClickListener {
+                val productId = product.productId ?: return@setOnClickListener
 
-            cartRef.child(cartItemId).setValue(cartItem)
-                .addOnSuccessListener {
-                    cartProductIds.add(productId)
-                    holder.addToCartButton.text = "Added"
-                    holder.addToCartButton.isEnabled = false
-                    Toast.makeText(holder.itemView.context, "Added to Cart", Toast.LENGTH_SHORT).show()
+                if (cartProductIds.contains(productId)) {
+                    Toast.makeText(holder.itemView.context, "Already in Cart", Toast.LENGTH_SHORT).show()
+                    return@setOnClickListener
                 }
-                .addOnFailureListener {
-                    Toast.makeText(holder.itemView.context, "Failed to add to Cart", Toast.LENGTH_SHORT).show()
-                }
+
+                val cartItemId = cartRef.push().key ?: return@setOnClickListener
+                val cartItem = product.copy(quantity = 1)
+
+                cartRef.child(cartItemId).setValue(cartItem)
+                    .addOnSuccessListener {
+                        cartProductIds.add(productId)
+                        holder.addToCartButton.text = "Added"
+                        holder.addToCartButton.isEnabled = false
+                        Toast.makeText(holder.itemView.context, "Added to Cart", Toast.LENGTH_SHORT).show()
+                    }
+                    .addOnFailureListener {
+                        Toast.makeText(holder.itemView.context, "Failed to add to Cart", Toast.LENGTH_SHORT).show()
+                    }
+            }
+        } else {
+            holder.addToCartButton.visibility = View.GONE
         }
     }
 

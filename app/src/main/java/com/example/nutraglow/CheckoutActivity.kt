@@ -55,7 +55,7 @@ class CheckoutActivity : AppCompatActivity() {
 
             if (paymentMethod == "Cash on Delivery") {
                 placeOrder(name, address, phone, email, "Cash on Delivery", false)
-            } else if (paymentMethod == "Pay with Khalti") {
+            } else if (paymentMethod == "Pay with Card") {
                 val intent = Intent(this, ManualPaymentActivity::class.java).apply {
                     putExtra("TOTAL_AMOUNT", totalAmount)
                     putExtra("TOTAL_ITEMS", totalItems)

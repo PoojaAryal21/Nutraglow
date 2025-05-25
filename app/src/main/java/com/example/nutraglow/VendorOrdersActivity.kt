@@ -50,24 +50,45 @@ class VendorOrdersActivity : AppCompatActivity() {
                             vendorOrders.clear()
 
                             for (orderData in orderSnap.children) {
-                                try {
-                                    val orderMap = orderData.value as? Map<*, *> ?: continue
-                                    val rawProductIds = orderMap["productIds"] as? Map<*, *> // Firebase stores it like {0=abc, 1=xyz}
-                                    val productIdList = rawProductIds?.values?.mapNotNull { it as? String } ?: emptyList()
+                                // Manually extract fields
+                                val orderId = orderData.child("orderId").getValue(String::class.java) ?: continue
+                                val userId = orderData.child("userId").getValue(String::class.java) ?: continue
+                                val customerName = orderData.child("customerName").getValue(String::class.java) ?: ""
+                                val address = orderData.child("address").getValue(String::class.java) ?: ""
+                                val phone = orderData.child("phone").getValue(String::class.java) ?: ""
+                                val email = orderData.child("email").getValue(String::class.java) ?: ""
+                                val paymentMethod = orderData.child("paymentMethod").getValue(String::class.java) ?: ""
+                                val totalAmount = orderData.child("totalAmount").getValue(Double::class.java) ?: 0.0
+                                val totalItems = orderData.child("totalItems").getValue(Int::class.java) ?: 0
+                                val status = orderData.child("status").getValue(String::class.java) ?: ""
 
-                                    val order = orderData.getValue(Order::class.java)
-                                    if (order != null && productIdList.any { it in vendorProductIds }) {
-                                        vendorOrders.add(order.copy(productIds = productIdList))
-                                    }
-                                } catch (e: Exception) {
-                                    e.printStackTrace()
+                                // Read productIds as a List<String> even if it's stored as a map
+                                val productIdsList = orderData.child("productIds").children.mapNotNull { it.getValue(String::class.java) }
+
+                                // Filter to vendor's products
+                                val vendorProductIdsInOrder = productIdsList.filter { it in vendorProductIds }
+                                if (vendorProductIdsInOrder.isNotEmpty()) {
+                                    val updatedOrder = Order(
+                                        orderId = orderId,
+                                        userId = userId,
+                                        customerName = customerName,
+                                        address = address,
+                                        phone = phone,
+                                        email = email,
+                                        paymentMethod = paymentMethod,
+                                        totalAmount = totalAmount,
+                                        totalItems = totalItems,
+                                        status = status,
+                                        productIds = vendorProductIdsInOrder
+                                    )
+                                    vendorOrders.add(updatedOrder)
                                 }
                             }
 
                             orderAdapter.notifyDataSetChanged()
 
                             if (vendorOrders.isEmpty()) {
-                                Toast.makeText(this@VendorOrdersActivity, "No matching orders found.", Toast.LENGTH_SHORT).show()
+                                Toast.makeText(this@VendorOrdersActivity, "No orders for your products.", Toast.LENGTH_SHORT).show()
                             }
                         }
 
@@ -82,4 +103,5 @@ class VendorOrdersActivity : AppCompatActivity() {
                 }
             })
     }
+
 }

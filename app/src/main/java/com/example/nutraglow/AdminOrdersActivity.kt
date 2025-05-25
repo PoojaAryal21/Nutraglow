@@ -46,21 +46,41 @@ class AdminOrdersActivity : AppCompatActivity() {
         ordersRef.addValueEventListener(object : ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
                 fullOrdersList.clear()
+
                 for (orderSnapshot in snapshot.children) {
                     try {
-                        val order = orderSnapshot.getValue(Order::class.java)
-                        if (order != null) {
-                            fullOrdersList.add(order)
-                        }
+                        val orderId = orderSnapshot.child("orderId").getValue(String::class.java) ?: continue
+                        val userId = orderSnapshot.child("userId").getValue(String::class.java) ?: ""
+                        val customerName = orderSnapshot.child("customerName").getValue(String::class.java) ?: ""
+                        val address = orderSnapshot.child("address").getValue(String::class.java) ?: ""
+                        val phone = orderSnapshot.child("phone").getValue(String::class.java) ?: ""
+                        val email = orderSnapshot.child("email").getValue(String::class.java) ?: ""
+                        val paymentMethod = orderSnapshot.child("paymentMethod").getValue(String::class.java) ?: ""
+                        val totalAmount = orderSnapshot.child("totalAmount").getValue(Double::class.java) ?: 0.0
+                        val totalItems = orderSnapshot.child("totalItems").getValue(Int::class.java) ?: 0
+                        val status = orderSnapshot.child("status").getValue(String::class.java) ?: ""
+
+                        val productIdsList = orderSnapshot.child("productIds").children.mapNotNull { it.getValue(String::class.java) }
+
+                        val order = Order(
+                            orderId = orderId,
+                            userId = userId,
+                            customerName = customerName,
+                            address = address,
+                            phone = phone,
+                            email = email,
+                            paymentMethod = paymentMethod,
+                            totalAmount = totalAmount,
+                            totalItems = totalItems,
+                            status = status,
+                            productIds = productIdsList
+                        )
+                        fullOrdersList.add(order)
                     } catch (e: Exception) {
-                        Toast.makeText(
-                            this@AdminOrdersActivity,
-                            "Error parsing order data: ${e.message}",
-                            Toast.LENGTH_SHORT
-                        ).show()
+                        e.printStackTrace() // Log the exception
                     }
                 }
-                // Refresh visible list
+
                 ordersList.clear()
                 ordersList.addAll(fullOrdersList)
                 ordersAdapter.notifyDataSetChanged()
@@ -75,6 +95,7 @@ class AdminOrdersActivity : AppCompatActivity() {
             }
         })
     }
+
 
     private fun filterOrders(query: String) {
         val lowerQuery = query.lowercase().trim()

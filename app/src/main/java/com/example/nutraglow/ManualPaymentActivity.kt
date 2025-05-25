@@ -5,7 +5,7 @@ import android.os.Bundle
 import android.widget.*
 import androidx.appcompat.app.AppCompatActivity
 import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.database.*
+import com.google.firebase.database.FirebaseDatabase
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -50,61 +50,61 @@ class ManualPaymentActivity : AppCompatActivity() {
         email = intent.getStringExtra("EMAIL") ?: ""
 
         payNowButton.setOnClickListener {
-            val enteredName = paymentNameInput.text.toString()
-            val enteredPhone = paymentPhoneInput.text.toString()
-            val cardNumber = cardNumberInput.text.toString()
-            val expiryDate = expiryDateInput.text.toString()
-            val cvv = cvvInput.text.toString()
-
-            if (enteredName.isBlank() || enteredPhone.isBlank() || cardNumber.isBlank() || expiryDate.isBlank() || cvv.isBlank()) {
-                Toast.makeText(this, "Please fill in all fields", Toast.LENGTH_SHORT).show()
-                return@setOnClickListener
-            }
-
-            if (enteredPhone.length != 10 || !enteredPhone.all { it.isDigit() }) {
-                Toast.makeText(this, "Phone number must be exactly 10 digits", Toast.LENGTH_SHORT).show()
-                return@setOnClickListener
-            }
-
-            if (cardNumber.length != 16 || !cardNumber.all { it.isDigit() }) {
-                Toast.makeText(this, "Card number must be 16 digits", Toast.LENGTH_SHORT).show()
-                return@setOnClickListener
-            }
-
-            val sdf = SimpleDateFormat("MM/yy", Locale.US)
-            try {
-                val expDate = sdf.parse(expiryDate)
-                val currentDate = Calendar.getInstance().time
-                if (expDate == null || expDate.before(currentDate)) {
-                    Toast.makeText(this, "Card is expired", Toast.LENGTH_SHORT).show()
-                    return@setOnClickListener
-                }
-            } catch (e: Exception) {
-                Toast.makeText(this, "Invalid expiry date format. Use MM/yy", Toast.LENGTH_SHORT).show()
-                return@setOnClickListener
-            }
-
-            if (cvv.length != 3 || !cvv.all { it.isDigit() }) {
-                Toast.makeText(this, "Invalid CVV. Redirecting to failure page.", Toast.LENGTH_SHORT).show()
-                startActivity(Intent(this, PaymentFailedActivity::class.java))
-                return@setOnClickListener
-            }
-
+            if (!validateInputs()) return@setOnClickListener
             progressBar.visibility = ProgressBar.VISIBLE
             statusText.text = "Processing Payment..."
-
             processPayment()
         }
 
-        cancelButton.setOnClickListener {
-            finish()
+        cancelButton.setOnClickListener { finish() }
+    }
+
+    private fun validateInputs(): Boolean {
+        val enteredPhone = paymentPhoneInput.text.toString()
+        val cardNumber = cardNumberInput.text.toString()
+        val expiryDate = expiryDateInput.text.toString()
+        val cvv = cvvInput.text.toString()
+
+        if (paymentNameInput.text.isBlank() || enteredPhone.isBlank() || cardNumber.isBlank() || expiryDate.isBlank() || cvv.isBlank()) {
+            Toast.makeText(this, "Please fill in all fields", Toast.LENGTH_SHORT).show()
+            return false
         }
+
+        if (enteredPhone.length != 10 || !enteredPhone.all { it.isDigit() }) {
+            Toast.makeText(this, "Phone number must be exactly 10 digits", Toast.LENGTH_SHORT).show()
+            return false
+        }
+
+        if (cardNumber.length != 16 || !cardNumber.all { it.isDigit() }) {
+            Toast.makeText(this, "Card number must be 16 digits", Toast.LENGTH_SHORT).show()
+            return false
+        }
+
+        val sdf = SimpleDateFormat("MM/yy", Locale.US)
+        try {
+            val expDate = sdf.parse(expiryDate)
+            val currentDate = Calendar.getInstance().time
+            if (expDate == null || expDate.before(currentDate)) {
+                Toast.makeText(this, "Card is expired", Toast.LENGTH_SHORT).show()
+                return false
+            }
+        } catch (e: Exception) {
+            Toast.makeText(this, "Invalid expiry date format. Use MM/yy", Toast.LENGTH_SHORT).show()
+            return false
+        }
+
+        if (cvv.length != 3 || !cvv.all { it.isDigit() }) {
+            Toast.makeText(this, "Invalid CVV", Toast.LENGTH_SHORT).show()
+            return false
+        }
+
+        return true
     }
 
     private fun processPayment() {
         val userId = FirebaseAuth.getInstance().currentUser?.uid ?: return
         val orderId = FirebaseDatabase.getInstance().reference.push().key ?: System.currentTimeMillis().toString()
-        val cartRef = FirebaseDatabase.getInstance().getReference("cart")
+        val cartRef = FirebaseDatabase.getInstance().getReference("carts").child(userId).child("products")
         val productRef = FirebaseDatabase.getInstance().getReference("products")
         val paymentRef = FirebaseDatabase.getInstance().getReference("payments")
         val orderRef = FirebaseDatabase.getInstance().getReference("orders")
@@ -143,7 +143,7 @@ class ManualPaymentActivity : AppCompatActivity() {
                             address = address,
                             phone = phone,
                             email = email,
-                            paymentMethod = "Paid via Manual Entry",
+                            paymentMethod = "Paid via Card",
                             totalAmount = totalAmount,
                             totalItems = totalItems,
                             status = "Confirmed",
@@ -160,7 +160,7 @@ class ManualPaymentActivity : AppCompatActivity() {
                                 "user" to userId,
                                 "vendorId" to vendorId,
                                 "amount" to amount,
-                                "method" to "Paid via Manual Entry",
+                                "method" to "Paid via Card",
                                 "productIds" to vendorProductIds,
                                 "timestamp" to System.currentTimeMillis()
                             )
@@ -169,9 +169,9 @@ class ManualPaymentActivity : AppCompatActivity() {
                             paymentRef.child(paymentId).setValue(payment)
                         }
 
-                        cartRef.removeValue()
+                        FirebaseDatabase.getInstance().getReference("carts").child(userId).child("products").removeValue()
 
-                        Toast.makeText(this, "Payment Successful. Tracking available.", Toast.LENGTH_LONG).show()
+                        Toast.makeText(this, "Payment Successful. Thank you!", Toast.LENGTH_LONG).show()
                         startActivity(Intent(this, OrderTrackingActivity::class.java).apply {
                             putExtra("ORDER_ID", orderId)
                         })
