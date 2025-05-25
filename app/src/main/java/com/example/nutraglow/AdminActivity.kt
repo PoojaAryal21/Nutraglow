@@ -1,4 +1,3 @@
-// Updated AdminActivity.kt with navigation buttons and structure
 package com.example.nutraglow
 
 import android.app.Activity
@@ -7,9 +6,11 @@ import android.net.Uri
 import android.os.Bundle
 import android.widget.*
 import androidx.appcompat.app.AppCompatActivity
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
+import com.bumptech.glide.Glide
 import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.database.DatabaseReference
-import com.google.firebase.database.FirebaseDatabase
+import com.google.firebase.database.*
 import com.google.firebase.storage.FirebaseStorage
 
 class AdminActivity : AppCompatActivity() {
@@ -28,6 +29,11 @@ class AdminActivity : AppCompatActivity() {
 
     private var imageUri: Uri? = null
 
+    // RecyclerView for admin’s products
+    private lateinit var adminProductsRecyclerView: RecyclerView
+    private lateinit var productAdapter: ProductAdapter
+    private val adminProductsList = mutableListOf<Product>()
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_admin)
@@ -44,10 +50,24 @@ class AdminActivity : AppCompatActivity() {
         logoutButton = findViewById(R.id.logoutButton)
         previewImageView = findViewById(R.id.productImagePreview)
 
-        selectImageButton.setOnClickListener { /*gets image from the device*/
+        // Setup admin products RecyclerView
+        adminProductsRecyclerView = findViewById(R.id.adminProductsRecyclerView)
+        adminProductsRecyclerView.layoutManager = LinearLayoutManager(this)
+        productAdapter = ProductAdapter(
+            productList = adminProductsList,
+            isCart = false,
+            showDescription = true,
+            userId = FirebaseAuth.getInstance().currentUser?.uid ?: "",
+            onDeleteClick = { deleteProduct(it) }
+        )
+        adminProductsRecyclerView.adapter = productAdapter
+
+        loadAdminProducts()
+
+        selectImageButton.setOnClickListener {
             val intent = Intent(Intent.ACTION_GET_CONTENT)
             intent.type = "image/*"
-            startActivityForResult(intent, IMAGE_PICK_CODE) /*image id generates*/
+            startActivityForResult(intent, IMAGE_PICK_CODE)
         }
 
         addProductButton.setOnClickListener {
@@ -63,18 +83,35 @@ class AdminActivity : AppCompatActivity() {
         findViewById<Button>(R.id.viewOrdersButton).setOnClickListener {
             startActivity(Intent(this, AdminOrdersActivity::class.java))
         }
-
         findViewById<Button>(R.id.viewCustomersButton).setOnClickListener {
             startActivity(Intent(this, AdminCustomersActivity::class.java))
         }
-
         findViewById<Button>(R.id.viewVendorsButton).setOnClickListener {
             startActivity(Intent(this, AdminVendorsActivity::class.java))
         }
-
         findViewById<Button>(R.id.viewPaymentsButton).setOnClickListener {
             startActivity(Intent(this, AdminPaymentsActivity::class.java))
         }
+    }
+
+    private fun loadAdminProducts() {
+        val currentUserId = FirebaseAuth.getInstance().currentUser?.uid ?: return
+
+        databaseProducts.orderByChild("owner").equalTo(currentUserId)
+            .addValueEventListener(object : ValueEventListener {
+                override fun onDataChange(snapshot: DataSnapshot) {
+                    adminProductsList.clear()
+                    for (productSnap in snapshot.children) {
+                        val product = productSnap.getValue(Product::class.java)
+                        product?.let { adminProductsList.add(it) }
+                    }
+                    productAdapter.notifyDataSetChanged()
+                }
+
+                override fun onCancelled(error: DatabaseError) {
+                    Toast.makeText(this@AdminActivity, "Failed to load products.", Toast.LENGTH_SHORT).show()
+                }
+            })
     }
 
     private fun addProductToDatabase() {
@@ -94,8 +131,8 @@ class AdminActivity : AppCompatActivity() {
         if (imageUrl.isNotEmpty()) {
             saveProductToDatabase(productId, name, price, description, imageUrl, currentUser)
         } else if (imageUri != null) {
-            val imageRef = storageReference.reference.child("product_images/$productId.jpg") //Path to the database
-            imageRef.putFile(imageUri!!) //Save image to database
+            val imageRef = storageReference.reference.child("product_images/$productId.jpg")
+            imageRef.putFile(imageUri!!)
                 .addOnSuccessListener {
                     imageRef.downloadUrl.addOnSuccessListener { uri ->
                         saveProductToDatabase(productId, name, price, description, uri.toString(), currentUser)
@@ -128,6 +165,18 @@ class AdminActivity : AppCompatActivity() {
             }
     }
 
+    private fun deleteProduct(product: Product) {
+        product.productId?.let {
+            databaseProducts.child(it).removeValue()
+                .addOnSuccessListener {
+                    Toast.makeText(this, "Product deleted.", Toast.LENGTH_SHORT).show()
+                }
+                .addOnFailureListener {
+                    Toast.makeText(this, "Failed to delete product.", Toast.LENGTH_SHORT).show()
+                }
+        }
+    }
+
     private fun clearFields() {
         productNameInput.text.clear()
         productPriceInput.text.clear()
@@ -148,7 +197,6 @@ class AdminActivity : AppCompatActivity() {
     }
 
     companion object {
-        private const val IMAGE_PICK_CODE = 1000 //id code
-
+        private const val IMAGE_PICK_CODE = 1000
     }
 }

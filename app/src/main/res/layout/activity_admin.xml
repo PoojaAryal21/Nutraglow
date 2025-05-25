@@ -24,34 +24,34 @@
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:gravity="center"
             android:text="Admin Panel"
             android:textSize="20sp"
-            android:gravity="center"
-            android:textStyle="bold"/>
+            android:textStyle="bold" />
 
         <EditText
             android:id="@+id/productName"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
+            android:layout_height="64dp"
             android:hint="Product Name" />
 
         <EditText
             android:id="@+id/productPrice"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
+            android:layout_height="64dp"
             android:hint="Product Price"
             android:inputType="numberDecimal" />
 
         <EditText
             android:id="@+id/productDescription"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
+            android:layout_height="64dp"
             android:hint="Product Description" />
 
         <EditText
             android:id="@+id/productImageUrl"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
+            android:layout_height="64dp"
             android:hint="Image URL (Optional)" />
 
         <Button
@@ -60,12 +60,13 @@
             android:layout_height="wrap_content"
             android:text="Select Image" />
 
+        <!-- ✅ Make preview visible and better size -->
         <ImageView
             android:id="@+id/productImagePreview"
             android:layout_width="match_parent"
-            android:layout_height="200dp"
-            android:scaleType="centerCrop"
-            android:visibility="gone" />
+            android:layout_height="21dp"
+            android:layout_marginTop="8dp"
+            android:scaleType="centerCrop" />
 
         <Button
             android:id="@+id/addProductButton"
@@ -78,9 +79,8 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="View Orders"
-            android:layout_marginTop="16dp"/>
+            android:layout_marginTop="16dp" />
 
-        <!-- ✅ Add these missing buttons -->
         <Button
             android:id="@+id/viewCustomersButton"
             android:layout_width="match_parent"
@@ -101,5 +101,22 @@
             android:layout_height="wrap_content"
             android:text="View Payments"
             android:layout_marginTop="12dp" />
+
+        <!-- ✅ Add RecyclerView for admin's products -->
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="My Added Products"
+            android:textStyle="bold"
+            android:textSize="18sp"
+            android:layout_marginTop="24dp"
+            android:gravity="center" />
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/adminProductsRecyclerView"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp" />
+
     </LinearLayout>
 </ScrollView>
