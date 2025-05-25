@@ -81,7 +81,7 @@ class CheckoutActivity : AppCompatActivity() {
     ) {
         val userId = FirebaseAuth.getInstance().currentUser?.uid ?: ""
         val orderId = FirebaseDatabase.getInstance().reference.push().key ?: System.currentTimeMillis().toString()
-        val cartRef = FirebaseDatabase.getInstance().getReference("cart")
+        val cartRef = FirebaseDatabase.getInstance().getReference("carts").child(userId).child("products")
 
         cartRef.get().addOnSuccessListener { snapshot ->
             val productIds = mutableListOf<String>()
