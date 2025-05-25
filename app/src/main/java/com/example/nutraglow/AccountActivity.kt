@@ -12,8 +12,6 @@ class AccountActivity : AppCompatActivity() {
 
     private lateinit var emailText: TextView
     private lateinit var changePasswordButton: Button
-    private lateinit var viewOrdersButton: Button
-    private lateinit var viewHistoryButton: Button
     private lateinit var navHome: Button
     private lateinit var navCart: Button
     private lateinit var navAccount: Button
@@ -25,8 +23,6 @@ class AccountActivity : AppCompatActivity() {
         /* Declaring and naming according to id in activity account.xml */
         emailText = findViewById(R.id.accountEmail)
         changePasswordButton = findViewById(R.id.changePasswordButton)
-        viewOrdersButton = findViewById(R.id.viewOrdersButton)
-        viewHistoryButton = findViewById(R.id.orderHistoryButton)
 
         navHome = findViewById(R.id.navHome)
         navCart = findViewById(R.id.navCart)
@@ -45,13 +41,7 @@ class AccountActivity : AppCompatActivity() {
                 }
         }
 
-        viewOrdersButton.setOnClickListener {
-            startActivity(Intent(this, UserOrdersActivity::class.java))
-        }
 
-        viewHistoryButton.setOnClickListener {
-            startActivity(Intent(this, OrderHistoryActivity::class.java))
-        }
 
         navHome.setOnClickListener {
             startActivity(Intent(this, CustomerActivity::class.java))

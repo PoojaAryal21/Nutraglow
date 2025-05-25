@@ -27,19 +27,7 @@
         android:text="Change Password"
         android:layout_marginBottom="10dp" />
 
-    <Button
-        android:id="@+id/viewOrdersButton"
-        android:layout_width="169dp"
-        android:layout_height="wrap_content"
-        android:text="View My Orders"
-        android:layout_marginBottom="10dp" />
 
-    <Button
-        android:id="@+id/orderHistoryButton"
-        android:layout_width="169dp"
-        android:layout_height="wrap_content"
-        android:text="Order History"
-        android:layout_marginBottom="10dp" />
 
     <View
         android:layout_width="match_parent"
